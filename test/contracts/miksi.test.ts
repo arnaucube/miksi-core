@@ -3,6 +3,7 @@ const Miksi = artifacts.require("../../contracts/Miksi.sol");
 
 const chai = require("chai");
 const expect = chai.expect;
+const truffleAssert = require('truffle-assertions');
 
 const fs = require("fs");
 const { groth } = require('snarkjs');
@@ -49,7 +50,7 @@ contract("miksi", (accounts) => {
 
     balance_wei = await web3.eth.getBalance(addr1);
     console.log("Balance at " + addr1, web3.utils.fromWei(balance_wei, 'ether'));
-    expect(balance_wei).to.be.equal('99499141300000000000');
+    expect(balance_wei).to.be.equal('99499107180000000000');
 
     // getDeposit data
     const res = await insMiksi.getDeposit(commitment);
@@ -80,7 +81,7 @@ contract("miksi", (accounts) => {
 
     // withdraw
     console.log("Withdraw of " + ethAmount + " ETH to " + addr2);
-    const resW = await insMiksi.withdraw(
+    let resW = await insMiksi.withdraw(
       commitment, 
       addr2,
       [proof.pi_a[0].toString(), proof.pi_a[1].toString()],
@@ -94,6 +95,24 @@ contract("miksi", (accounts) => {
 
     balance_wei = await web3.eth.getBalance(addr2);
     console.log("Balance at " + addr2, web3.utils.fromWei(balance_wei, 'ether'));
+    expect(balance_wei).to.be.equal('100500000000000000000');
+
+    console.log("Try to reuse the zkproof and expect revert");
+    await truffleAssert.fails(
+      insMiksi.withdraw(
+        commitment, 
+        addr2,
+        [proof.pi_a[0].toString(), proof.pi_a[1].toString()],
+        [
+          [proof.pi_b[0][1].toString(), proof.pi_b[0][0].toString()],
+          [proof.pi_b[1][1].toString(), proof.pi_b[1][0].toString()]
+        ],
+        [proof.pi_c[0].toString(), proof.pi_c[1].toString()]
+      ),
+      truffleAssert.ErrorType.REVERT,
+      "deposit already withdrawed"
+    );
+    balance_wei = await web3.eth.getBalance(addr2);
     expect(balance_wei).to.be.equal('100500000000000000000');
   });
 });

@@ -14,6 +14,7 @@ contract Miksi {
   struct Deposit {
     uint256 coinCode;
     uint256 amount;
+    bool used;
   }
 
   function deposit(
@@ -21,7 +22,7 @@ contract Miksi {
             // uint256 amount,
             uint256 commitment
   ) public payable {
-    deposits[commitment] = Deposit(coinCode, msg.value);
+    deposits[commitment] = Deposit(coinCode, msg.value, false);
   }
 
   function getDeposit(
@@ -49,6 +50,8 @@ contract Miksi {
     ];
     require(verifier.verifyProof(a, b, c, input), "zkProof withdraw could not be verified");
     // zk verification passed, proceed with the withdraw
+    require(!deposits[commitment].used, "deposit already withdrawed");
+    deposits[commitment].used = true;
     _address.send(deposits[commitment].amount);
     // _address.call.value(deposits[commitment].amount).gas(20317)();
 

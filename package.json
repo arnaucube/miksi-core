@@ -1,7 +1,7 @@
 {
-  "name": "circuits",
+  "name": "miksi-core",
   "version": "0.0.1",
-  "description": "miksilo circuits",
+  "description": "miksi-core",
   "main": "index.js",
   "scripts": {
     "clean": "rm -fR dist",

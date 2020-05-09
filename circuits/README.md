@@ -1,4 +1,4 @@
-# circuits [![Tests](https://github.com/miksi/miksi/circuits/workflows/Tests/badge.svg)](https://github.com/miksi/miksi/circuits/actions?query=workflow%3ATests)
+# circuits
 
 Circuits used by miksi.
 

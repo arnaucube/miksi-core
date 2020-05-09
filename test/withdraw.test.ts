@@ -12,7 +12,7 @@ describe("withdraw test", function () {
 
     it("Test Withdraw", async () => {
         const circuit = await tester(
-            path.join(__dirname, "../circuits", "withdraw.circom"),
+            path.join(__dirname, "../circuits/circuits", "withdraw.circom"),
             {reduceConstraints: false}
         );
 

@@ -29,7 +29,8 @@ describe("withdraw test", function () {
             "coinCode": coinCode,
             "amount": amount,
             "commitment": commitment,
-            "secret": secret
+            "secret": secret,
+            "address": "987654321"
         });
         await circuit.checkConstraints(witness);
     });

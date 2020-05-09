@@ -11,6 +11,10 @@ PUB_amount+--------->+Poseidon+------->+ == +<-----+PUB_commitment
 PRI_secret+--------->+        |
                      +--------+
 
+                +----+
+PUB_address+--->+ != +<---+0
+                +----+
+
 
 
 */
@@ -27,6 +31,7 @@ template Withdraw() {
 	signal input amount;
 	signal input commitment;
 	signal private input secret;
+	signal input address;
 
 	component hash = Poseidon(3, 6, 8, 57);
 	hash.inputs[0] <== coinCode;
@@ -37,6 +42,10 @@ template Withdraw() {
 	eq.in[0] <== hash.out;
 	eq.in[1] <== commitment;
 	eq.out === 1;
+
+	component z = IsZero();
+	z.in <== address;
+	z.out === 0;
 }
 
 component main = Withdraw();

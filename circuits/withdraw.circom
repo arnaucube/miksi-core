@@ -15,12 +15,12 @@ PRI_secret+--------->+        |
 
 */
 
-include "../../node_modules/circomlib/circuits/babyjub.circom";
-include "../../node_modules/circomlib/circuits/comparators.circom";
-include "../../node_modules/circomlib/circuits/poseidon.circom";
-include "../../node_modules/circomlib/circuits/bitify.circom";
-include "../../node_modules/circomlib/circuits/smt/smtverifier.circom";
-include "../../node_modules/circomlib/circuits/smt/smtprocessor.circom";
+include "../node_modules/circomlib/circuits/babyjub.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
+include "../node_modules/circomlib/circuits/poseidon.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
+include "../node_modules/circomlib/circuits/smt/smtverifier.circom";
+include "../node_modules/circomlib/circuits/smt/smtprocessor.circom";
 
 template Withdraw() {
 	signal input coinCode;

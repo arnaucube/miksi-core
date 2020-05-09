@@ -12,10 +12,14 @@ jobs:
         node-version: [ 10.x ]
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Use Nodejs
       uses: actions/setup-node@v1
     - name: Install node_modules
       run: npm install
-    - name: Test circom circuits
-      run: npm run test
+    - name: Execute tests
+      run: |
+        sh ./compile-circuits.sh
+        npm run test-circuits
+        npm run test-sc

@@ -1,23 +1,39 @@
 pragma solidity ^0.6.0;
 
-import './verifier.sol';
+import './deposit-verifier.sol';
+import './withdraw-verifier.sol';
 
 contract Miksi {
-  Verifier    verifier;
+  DepositVerifier    dVerifier;
+  WithdrawVerifier    wVerifier;
 
-  constructor( address _verifierContractAddr) public {
-    verifier = Verifier(_verifierContractAddr);
-  }
   uint256 amount = uint256(1000000000000000000);
-  uint256 root;
+  uint256 root ;
   uint256[] commitments;
   mapping(uint256 => bool) nullifiers;
 
+  constructor( address _depositVerifierContractAddr, address _withdrawVerifierContractAddr) public {
+    dVerifier = DepositVerifier(_depositVerifierContractAddr);
+    wVerifier = WithdrawVerifier(_withdrawVerifierContractAddr);
+    root = uint256(11499909227292257605992378629333104385616480982267969744564817844870636870870);
+  }
+
   function deposit(
             uint256 _commitment,
-            uint256 _root
+            uint256 _root,
+            uint[2] memory a,
+            uint[2][2] memory b,
+            uint[2] memory c
   ) public payable {
-    // TODO check root state transition update with zkp
+    // check root state transition update with zkp
+    uint256[5] memory input = [
+      0,
+      msg.value,
+      root, // rootOld
+      _root, // rootNew
+      _commitment
+    ];
+    require(dVerifier.verifyProof(a, b, c, input), "zkProof deposit could not be verified");
 
     require(msg.value==amount, "value should be 1 ETH"); // this can be flexible with a wrapper with preset fixed amounts
     commitments.push(_commitment);
@@ -43,7 +59,7 @@ contract Miksi {
       root,
       uint256(_address)
     ];
-    require(verifier.verifyProof(a, b, c, input), "zkProof withdraw could not be verified");
+    require(wVerifier.verifyProof(a, b, c, input), "zkProof withdraw could not be verified");
     // zk verification passed
     require(useNullifier(nullifier), "nullifier already used");
     // nullifier check passed

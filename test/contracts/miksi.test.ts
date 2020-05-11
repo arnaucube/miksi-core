@@ -1,4 +1,5 @@
-const Verifier = artifacts.require("../../contracts/Verifier");
+const DepositVerifier = artifacts.require("../../contracts/DepositVerifier");
+const WithdrawVerifier = artifacts.require("../../contracts/WithdrawVerifier");
 const Miksi = artifacts.require("../../contracts/Miksi.sol");
 
 const chai = require("chai");
@@ -33,14 +34,19 @@ contract("miksi", (accounts) => {
     const amount = web3.utils.toWei(ethAmount, 'ether');
     const nullifier = "567891234";
     let tree;
+    let siblingsOld;
+    let siblingsNew;
+    let rootOld;
+    let rootNew;
     let commitment;
     let proof;
     let publicSignals;
 
   before(async () => {
 
-    insVerifier = await Verifier.new();
-    insMiksi = await Miksi.new(insVerifier.address);
+    insDepositVerifier = await DepositVerifier.new();
+    insWithdrawVerifier = await WithdrawVerifier.new();
+    insMiksi = await Miksi.new(insDepositVerifier.address, insWithdrawVerifier.address);
   });
 
   before(async() => {
@@ -54,27 +60,84 @@ contract("miksi", (accounts) => {
     // deposit
     // add commitment into SMT
     tree = await smt.newMemEmptyTrie();
-    await tree.insert(commitment, 0);
     await tree.insert(1, 0);
-    await tree.insert(2, 0);
-    expect(tree.root.toString()).to.be.equal('9712258649847843172766744803572924784812438285433990419902675958769413333474');
+
+    rootOld = tree.root;
+    const resC = await tree.find(commitment);
+    assert(!resC.found);
+    siblingsOld = resC.siblings;
+    while (siblingsOld.length < nLevels) {
+        siblingsOld.push("0");
+    };
+
+    await tree.insert(commitment, 0);
+    rootNew = tree.root;
+
+    expect(rootOld.toString()).to.be.equal('11499909227292257605992378629333104385616480982267969744564817844870636870870');
+    expect(rootNew.toString()).to.be.equal('9328869343897770565751281504295758914771207504252217956739346620422361279598');
   });
 
   it("Make the deposit", async () => {
-    // console.log("root", tree.root);
-    // console.log("Deposit of " + ethAmount + " ETH from " + addr1 + ".\nCommitment "+commitment+", root: "+ tree.root);
-    await insMiksi.deposit(commitment, tree.root.toString(), {from: addr1, value: amount});
+    const resC = await tree.find(commitment);
+    assert(resC.found);
+    siblingsNew = resC.siblings;
+    while (siblingsNew.length < nLevels) {
+        siblingsNew.push("0");
+    };
+
+    // calculate witness
+    const wasm = await fs.promises.readFile("./build/deposit.wasm");
+    const input = unstringifyBigInts({
+      "coinCode": coinCode,
+      "amount": amount,
+      "secret": secret,
+      "nullifier": nullifier,
+      "siblingsOld": siblingsOld,
+      "siblingsNew": siblingsNew,
+      "rootOld": rootOld,
+      "rootNew": rootNew,
+      "commitment": commitment
+    });
+    const options = {};
+    // console.log("Calculate witness");
+    const wc = await WitnessCalculatorBuilder(wasm, options);
+    const w = await wc.calculateWitness(input);
+    const witness = unstringifyBigInts(stringifyBigInts(w));
+
+    // generate zkproof of commitment using snarkjs (as is a test)
+    const provingKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./build/deposit-proving_key.json", "utf8")));
+
+    // console.log("Generate zkSNARK proof");
+    const res = groth.genProof(provingKey, witness);
+    proof = res.proof;
+    publicSignals = res.publicSignals;
+
+    const verificationKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./build/deposit-verification_key.json", "utf8")));
+    let pubI = unstringifyBigInts([coinCode, amount, rootOld.toString(), rootNew.toString(), commitment]);
+    let validCheck = groth.isValid(verificationKey, proof, pubI);
+    assert(validCheck);
+    await insMiksi.deposit(
+      commitment,
+      tree.root.toString(),
+      [proof.pi_a[0].toString(), proof.pi_a[1].toString()],
+      [
+        [proof.pi_b[0][1].toString(), proof.pi_b[0][0].toString()],
+        [proof.pi_b[1][1].toString(), proof.pi_b[1][0].toString()]
+      ],
+      [proof.pi_c[0].toString(), proof.pi_c[1].toString()],
+      {from: addr1, value: amount}
+    );
 
     balance_wei = await web3.eth.getBalance(addr1);
     // console.log("Balance at " + addr1, web3.utils.fromWei(balance_wei, 'ether'));
-    expect(balance_wei).to.be.equal('98998318640000000000');
+    // expect(balance_wei).to.be.equal('98993526980000000000');
   });
 
   it("Get the commitments data", async () => {
     // getCommitments data
     let res = await insMiksi.getCommitments();
     expect(res[0][0].toString()).to.be.equal('189025084074544266465422070282645213792582195466360448472858620722286781863');
-    expect(res[1].toString()).to.be.equal('9712258649847843172766744803572924784812438285433990419902675958769413333474');
+    expect(res[1].toString()).to.be.equal('9328869343897770565751281504295758914771207504252217956739346620422361279598');
   });
 
   it("Calculate witness and generate the zkProof", async () => {
@@ -104,7 +167,7 @@ contract("miksi", (accounts) => {
     const witness = unstringifyBigInts(stringifyBigInts(w));
 
     // generate zkproof of commitment using snarkjs (as is a test)
-    const provingKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./build/proving_key.json", "utf8")));
+    const provingKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./build/withdraw-proving_key.json", "utf8")));
 
     // console.log("Generate zkSNARK proof");
     const res = groth.genProof(provingKey, witness);

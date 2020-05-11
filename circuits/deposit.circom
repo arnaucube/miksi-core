@@ -34,7 +34,7 @@ template Deposit(nLevels) {
 	signal input coinCode;
 	signal input amount;
 	signal private input secret;
-	signal input nullifier;
+	signal private input nullifier;
 	signal private input siblingsOld[nLevels];
 	signal private input siblingsNew[nLevels];
 	signal input rootOld;

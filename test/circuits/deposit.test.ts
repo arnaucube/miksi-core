@@ -30,7 +30,7 @@ describe("deposit test", function () {
         // add commitment into SMT
         let tree = await smt.newMemEmptyTrie();
         await tree.insert(1, 0);
-        await tree.insert(2, 0);
+        // await tree.insert(2, 0);
 
         let rootOld = tree.root;
         let res = await tree.find(commitment);

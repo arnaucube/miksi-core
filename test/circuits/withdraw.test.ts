@@ -3,6 +3,7 @@ const tester = require("circom").tester;
 const chai = require("chai");
 const assert = chai.assert;
 const circomlib = require("circomlib");
+const smt = require("circomlib").smt;
 
 export {};
 
@@ -16,20 +17,39 @@ describe("withdraw test", function () {
             {reduceConstraints: false}
         );
 
-        // const secret = Math.floor(Math.random()*1000).toString();
-        const secret = "123456789";
+        const nLevels = 5;
+        const secret = "1234567890";
 
-        const coinCode = "1";
-        const amount = "100";
+        const coinCode = "0";
+        const amount = '1000000000000000000';
+        const nullifier = "567891234";
 
         const poseidon = circomlib.poseidon.createHash(6, 8, 57);
-        const commitment = poseidon([coinCode, amount, secret]).toString();
+        const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
+        // add commitment into SMT
+        let tree = await smt.newMemEmptyTrie();
+        await tree.insert(commitment, 0);
+        await tree.insert(1, 0);
+        await tree.insert(2, 0);
+        console.log("root", tree.root);
+        const res = await tree.find(commitment);
+        assert(res.found);
+        let siblings = res.siblings;
+        while (siblings.length < nLevels) {
+            siblings.push("0");
+        };
+        console.log("siblings", siblings);
+
+        let root = tree.root;
+        
         const witness = await circuit.calculateWitness({
             "coinCode": coinCode,
             "amount": amount,
-            "commitment": commitment,
             "secret": secret,
+            "nullifier": nullifier,
+            "siblings": siblings,
+            "root": root,
             "address": "987654321"
         });
         await circuit.checkConstraints(witness);

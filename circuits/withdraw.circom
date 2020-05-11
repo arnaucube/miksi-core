@@ -3,49 +3,61 @@
 
 WARNING: WIP, very initial version of the miksi circuit
 
-                     +--------+
-PUB_coinCode+------->+        |
-                     |        |        +----+
-PUB_amount+--------->+Poseidon+------->+ == +<-----+PUB_commitment
-                     |        |        +----+
-PRI_secret+--------->+        |
-                     +--------+
 
-                +----+
-PUB_address+--->+ != +<---+0
-                +----+
+
+                                               +----------+
+                                               |          |
+PUB_nullifier+------>+----------+              |          |
+PUB_coinCode+------->+          |              | SMT      +<------+PRI_siblings
+                     |          |              | Poseidon |
+PUB_amount+--------->+ Poseidon +------------->+ Verifier |
+                     |          |              |          +<------+PUB_root
+PRI_secret+--------->+          |              |          |        +
+                     +----------+              +----------+        |
+                                                                   |
+                             +----+                  +----+        |
+             PUB_address+--->+ != +<-------+0+------>+ != +<-------+
+                             +----+                  +----+
 
 
 
 */
 
-include "../node_modules/circomlib/circuits/babyjub.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/smt/smtverifier.circom";
-include "../node_modules/circomlib/circuits/smt/smtprocessor.circom";
 
-template Withdraw() {
+template Withdraw(nLevels) {
 	signal input coinCode;
 	signal input amount;
-	signal input commitment;
 	signal private input secret;
+	signal input nullifier;
+	signal private input siblings[nLevels];
+	signal input root;
 	signal input address;
 
-	component hash = Poseidon(3, 6, 8, 57);
+	component hash = Poseidon(4, 6, 8, 57);
 	hash.inputs[0] <== coinCode;
 	hash.inputs[1] <== amount;
 	hash.inputs[2] <== secret;
-
-	component eq = IsEqual();
-	eq.in[0] <== hash.out;
-	eq.in[1] <== commitment;
-	eq.out === 1;
+	hash.inputs[3] <== nullifier;
 
 	component z = IsZero();
 	z.in <== address;
 	z.out === 0;
+
+	component smtV = SMTVerifier(nLevels);
+	smtV.enabled <== 1;
+	smtV.fnc <== 0;
+	smtV.root <== root;
+	for (var i=0; i<nLevels; i++) {
+		smtV.siblings[i] <== siblings[i];
+	}
+	smtV.oldKey <== 0;
+	smtV.oldValue <== 0;
+	smtV.isOld0 <== 0;
+	smtV.key <== hash.out;
+	smtV.value <== 0;
 }
 
-component main = Withdraw();
+component main = Withdraw(5);

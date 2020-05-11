@@ -5,15 +5,16 @@ WARNING: WIP, very initial version of the miksi circuit
 
 
 
-                                               +----------+
-                                               |          |
-PUB_nullifier+------>+----------+              |          |
+                     -----------+              +----------+
+PUB_nullifier+------>+          |              |          |
+                     |          |              |          |
 PUB_coinCode+------->+          |              | SMT      +<------+PRI_siblings
-                     |          |              | Poseidon |
-PUB_amount+--------->+ Poseidon +------------->+ Verifier |
+                     | Poseidon +------------->+ Poseidon |
+PUB_amount+--------->+          |              | Verifier |
                      |          |              |          +<------+PUB_root
 PRI_secret+--------->+          |              |          |        +
                      +----------+              +----------+        |
+                                                                   |
                                                                    |
                              +----+                  +----+        |
              PUB_address+--->+ != +<-------+0+------>+ != +<-------+

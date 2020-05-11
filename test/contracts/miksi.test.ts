@@ -41,9 +41,9 @@ contract("miksi", (accounts) => {
     let commitment;
     let proof;
     let publicSignals;
+    let commitmentsArray;
 
   before(async () => {
-
     insDepositVerifier = await DepositVerifier.new();
     insWithdrawVerifier = await WithdrawVerifier.new();
     insMiksi = await Miksi.new(insDepositVerifier.address, insWithdrawVerifier.address);
@@ -138,6 +138,17 @@ contract("miksi", (accounts) => {
     let res = await insMiksi.getCommitments();
     expect(res[0][0].toString()).to.be.equal('189025084074544266465422070282645213792582195466360448472858620722286781863');
     expect(res[1].toString()).to.be.equal('9328869343897770565751281504295758914771207504252217956739346620422361279598');
+    console.log(res[0]);
+    commitmentsArray = res[0];
+  });
+
+  it("Rebuild the tree from sc commitments", async () => {
+    let treeTmp = await smt.newMemEmptyTrie();
+    await treeTmp.insert(1, 0);
+    for (let i=0; i<commitmentsArray.length; i++) {
+      await treeTmp.insert(commitmentsArray[i], 0);
+    }
+    expect(treeTmp.root).to.be.equal(tree.root);
   });
 
   it("Calculate witness and generate the zkProof", async () => {

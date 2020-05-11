@@ -2,6 +2,7 @@
 
 *From Esperanto, **miksi** (miks·i): to mingle, to blend, to mix, to shuffle*
 
+![](miksi-logo00-small.png)
 
 
 **Warning:** This repository is in a very early stage.

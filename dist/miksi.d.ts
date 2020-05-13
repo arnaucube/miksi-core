@@ -1,0 +1,11 @@
+declare const fs: any;
+declare const groth: any;
+declare const stringifyBigInts: any, unstringifyBigInts: any;
+declare const WitnessCalculatorBuilder: any;
+declare const circomlib: any;
+declare const smt: any;
+declare const Web3: any;
+declare const nLevels = 5;
+declare const coinCode = "0";
+declare const ethAmount = "1";
+declare const amount: any;

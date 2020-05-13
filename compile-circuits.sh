@@ -37,6 +37,8 @@ compile_and_ts() {
   sed -i "s/contract Verifier/contract ${CONTRACT}Verifier/g" ${CIRCUIT}-verifier.sol
   sed -i "s/Pairing/${CONTRACT}Pairing/g" ${CIRCUIT}-verifier.sol
   cp ${CIRCUIT}-verifier.sol ../contracts/
+
+  node ../node_modules/wasmsnark/tools/buildpkey.js -i ${CIRCUIT}-proving_key.json -o ${CIRCUIT}-proving_key.bin
 }
 
 CIRCUIT="deposit"

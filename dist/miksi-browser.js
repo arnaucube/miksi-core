@@ -58,30 +58,35 @@ module.exports = require('../package.json').version;
 
 },{"../package.json":4}],4:[function(require,module,exports){
 module.exports={
-  "_from": "@web3-js/websocket@^1.0.29",
+  "_args": [
+    [
+      "@web3-js/websocket@1.0.30",
+      "/home/user/git/miksi/miksi-core"
+    ]
+  ],
+  "_from": "@web3-js/websocket@1.0.30",
   "_id": "@web3-js/websocket@1.0.30",
   "_inBundle": false,
   "_integrity": "sha512-fDwrD47MiDrzcJdSeTLF75aCcxVVt8B1N74rA+vh2XCAvFy4tEWJjtnUtj2QG7/zlQ6g9cQ88bZFBxwd9/FmtA==",
   "_location": "/@web3-js/websocket",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "version",
     "registry": true,
-    "raw": "@web3-js/websocket@^1.0.29",
+    "raw": "@web3-js/websocket@1.0.30",
     "name": "@web3-js/websocket",
     "escapedName": "@web3-js%2fwebsocket",
     "scope": "@web3-js",
-    "rawSpec": "^1.0.29",
+    "rawSpec": "1.0.30",
     "saveSpec": null,
-    "fetchSpec": "^1.0.29"
+    "fetchSpec": "1.0.30"
   },
   "_requiredBy": [
     "/web3-providers-ws"
   ],
   "_resolved": "https://registry.npmjs.org/@web3-js/websocket/-/websocket-1.0.30.tgz",
-  "_shasum": "9ea15b7b582cf3bf3e8bc1f4d3d54c0731a87f87",
-  "_spec": "@web3-js/websocket@^1.0.29",
-  "_where": "/home/user/git/miksi/miksi-core/node_modules/web3-providers-ws",
+  "_spec": "1.0.30",
+  "_where": "/home/user/git/miksi/miksi-core",
   "author": {
     "name": "Brian McKelvey",
     "email": "theturtle32@gmail.com",
@@ -91,7 +96,6 @@ module.exports={
   "bugs": {
     "url": "https://github.com/web3-js/WebSocket-Node/issues"
   },
-  "bundleDependencies": false,
   "config": {
     "verbose": false
   },
@@ -109,7 +113,6 @@ module.exports={
     "typedarray-to-buffer": "^3.1.5",
     "yaeti": "^0.0.6"
   },
-  "deprecated": false,
   "description": "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
   "devDependencies": {
     "buffer-equal": "^1.0.0",
@@ -27399,21 +27402,27 @@ utils.intFromLE = intFromLE;
 
 },{"bn.js":38,"minimalistic-assert":261,"minimalistic-crypto-utils":262}],155:[function(require,module,exports){
 module.exports={
-  "_from": "elliptic@^6.4.0",
+  "_args": [
+    [
+      "elliptic@6.5.2",
+      "/home/user/git/miksi/miksi-core"
+    ]
+  ],
+  "_from": "elliptic@6.5.2",
   "_id": "elliptic@6.5.2",
   "_inBundle": false,
   "_integrity": "sha512-f4x70okzZbIQl/NSRLkI/+tteV/9WqL98zx+SQ69KbXxmVrmjwsNUPn/gYJJ0sHvEak24cZgHIPegRePAtA/xw==",
   "_location": "/elliptic",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "version",
     "registry": true,
-    "raw": "elliptic@^6.4.0",
+    "raw": "elliptic@6.5.2",
     "name": "elliptic",
     "escapedName": "elliptic",
-    "rawSpec": "^6.4.0",
+    "rawSpec": "6.5.2",
     "saveSpec": null,
-    "fetchSpec": "^6.4.0"
+    "fetchSpec": "6.5.2"
   },
   "_requiredBy": [
     "/browserify-sign",
@@ -27424,9 +27433,8 @@ module.exports={
     "/web3-utils/eth-lib"
   ],
   "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.5.2.tgz",
-  "_shasum": "05c5678d7173c049d8ca433552224a495d0e3762",
-  "_spec": "elliptic@^6.4.0",
-  "_where": "/home/user/git/miksi/miksi-core/node_modules/eth-lib",
+  "_spec": "6.5.2",
+  "_where": "/home/user/git/miksi/miksi-core",
   "author": {
     "name": "Fedor Indutny",
     "email": "fedor@indutny.com"
@@ -27434,7 +27442,6 @@ module.exports={
   "bugs": {
     "url": "https://github.com/indutny/elliptic/issues"
   },
-  "bundleDependencies": false,
   "dependencies": {
     "bn.js": "^4.4.0",
     "brorand": "^1.0.1",
@@ -27444,7 +27451,6 @@ module.exports={
     "minimalistic-assert": "^1.0.0",
     "minimalistic-crypto-utils": "^1.0.0"
   },
-  "deprecated": false,
   "description": "EC cryptography",
   "devDependencies": {
     "brfs": "^1.4.3",
@@ -75050,29 +75056,35 @@ module.exports = {
 }).call(this,{"isBuffer":require("../../is-buffer/index.js")})
 },{"../../is-buffer/index.js":247,"bn.js":38,"eth-lib/lib/hash":443,"ethereum-bloom-filters":162,"number-to-bn":265,"underscore":390,"utf8":394}],447:[function(require,module,exports){
 module.exports={
-  "_from": "web3@^1.2.6",
+  "_args": [
+    [
+      "web3@1.2.7",
+      "/home/user/git/miksi/miksi-core"
+    ]
+  ],
+  "_from": "web3@1.2.7",
   "_id": "web3@1.2.7",
   "_inBundle": false,
   "_integrity": "sha512-jAAJHMfUlTps+jH2li1ckDFEpPrEEriU/ubegSTGRl3KRdNhEqT93+3kd7FHJTn3NgjcyURo2+f7Da1YcZL8Mw==",
   "_location": "/web3",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "version",
     "registry": true,
-    "raw": "web3@^1.2.6",
+    "raw": "web3@1.2.7",
     "name": "web3",
     "escapedName": "web3",
-    "rawSpec": "^1.2.6",
+    "rawSpec": "1.2.7",
     "saveSpec": null,
-    "fetchSpec": "^1.2.6"
+    "fetchSpec": "1.2.7"
   },
   "_requiredBy": [
+    "#DEV:/",
     "/circomlib"
   ],
   "_resolved": "https://registry.npmjs.org/web3/-/web3-1.2.7.tgz",
-  "_shasum": "fcb83571036c1c6f475bc984785982a444e8d78e",
-  "_spec": "web3@^1.2.6",
-  "_where": "/home/user/git/miksi/miksi-core/node_modules/circomlib",
+  "_spec": "1.2.7",
+  "_where": "/home/user/git/miksi/miksi-core",
   "author": {
     "name": "ethereum.org"
   },
@@ -75105,7 +75117,6 @@ module.exports={
   "bugs": {
     "url": "https://github.com/ethereum/web3.js/issues"
   },
-  "bundleDependencies": false,
   "dependencies": {
     "web3-bzz": "1.2.7",
     "web3-core": "1.2.7",
@@ -75115,7 +75126,6 @@ module.exports={
     "web3-shh": "1.2.7",
     "web3-utils": "1.2.7"
   },
-  "deprecated": false,
   "description": "Ethereum JavaScript API",
   "devDependencies": {
     "@types/node": "^12.12.34",
@@ -76276,6 +76286,7 @@ function extend() {
 const fs = require("fs");
 const bigInt = require("big-integer");
 const { groth } = require('snarkjs');
+const { Fr } = require('ffjavascript').bn128;
 const { stringifyBigInts, unstringifyBigInts } = require('ffjavascript').utils;
 const WitnessCalculatorBuilder = require("circom_runtime").WitnessCalculatorBuilder;
 const circomlib = require("circomlib");
@@ -76289,25 +76300,38 @@ const coinCode = "0"; // refearing to ETH
 const ethAmount = '1';
 const amount = Web3.utils.toWei(ethAmount, 'ether');
 
-// let bn128;
-// 
-// exports.init = async () => {
-//         bn128 = await buildBn128();
-// }
+exports.randBigInt = () => {
+	return Fr.random();
+};
 
-exports.calcWitness = async (wasm, secret, nullifier, commitments) => {
+exports.calcCommitment = (secret, nullifier) => {
+	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
+	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
+	return commitment;
+};
+
+exports.calcDepositWitness = async (wasm, secret, nullifier, commitments) => {
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
+	// rebuild the tree
 	let tree = await smt.newMemEmptyTrie();
 	await tree.insert(1, 0);
+	for (let i=0; i<commitments.length; i++) {
+		await tree.insert(commitments[i], 0);
+	}
 
 	// old root
 	const rootOld = tree.root;
 	const resOld = await tree.find(commitment);
-	if (resOld.found) {
-		console.error("leaf expect to not exist but exists");
+	let oldKey = "0";
+	if (!resOld.found) {
+		oldKey = resOld.notFoundKey.toString();
 	}
+	console.log("oldKey", oldKey);
+	// if (resOld.found) {
+	//         console.error("leaf expect to not exist but exists");
+	// }
 	let siblingsOld = resOld.siblings;
 	while (siblingsOld.length < nLevels) {
 		siblingsOld.push("0");
@@ -76332,11 +76356,76 @@ exports.calcWitness = async (wasm, secret, nullifier, commitments) => {
 		"amount": amount,
 		"secret": secret,
 		"nullifier": nullifier,
+		"oldKey": oldKey,
 		"siblingsOld": siblingsOld,
 		"siblingsNew": siblingsNew,
 		"rootOld": rootOld,
 		"rootNew": rootNew,
 		"commitment": commitment
+	});
+	console.log("input", input);
+	// const options = {};
+	// const wc = await WitnessCalculatorBuilder(wasm, options);
+
+	const wc = await WitnessCalculatorBuilder(wasm);
+
+	const witness = await wc.calculateWitness(input, {sanityCheck: true});
+
+	const wBuff = Buffer.allocUnsafe(witness.length*32);
+
+	for (let i=0; i<witness.length; i++) {
+		for (let j=0; j<8; j++) {
+			const bi = witness[i];
+			const v = bigInt(bi).shiftRight(j*32).and(0xFFFFFFFF).toJSNumber();
+			// wBuff.writeUInt32LE(v, i*32 + j*4, 4)
+			wBuff.writeUInt32LE(v, i*32 + j*4)
+		}
+	}
+
+
+	// const witness = unstringifyBigInts(stringifyBigInts(w));
+	// return wBuff;
+	return {
+		witness: wBuff,
+		publicInputs: {
+			commitment:commitment,
+			root:rootNew
+		}
+	};
+}
+
+exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr) => {
+	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
+	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
+
+	// rebuild the tree
+	let tree = await smt.newMemEmptyTrie();
+	await tree.insert(1, 0);
+	for (let i=0; i<commitments.length; i++) {
+		await tree.insert(commitments[i], 0);
+	}
+	// await tree.insert(commitment, 0);
+
+	// root
+	const root = tree.root;
+	const res = await tree.find(commitment);
+	if (!res.found) {
+		console.error("leaf expect to exist but not exists");
+	}
+	let siblings = res.siblings;
+	while (siblings.length < nLevels) {
+		siblings.push("0");
+	};
+
+	// calculate witness
+	const input = unstringifyBigInts({
+		"coinCode": coinCode,
+		"amount": amount,
+		"secret": secret,
+		"nullifier": nullifier,
+		"siblings": siblings,
+		"root": root,
+		"address": addr
 	});
 	console.log("input", input);
 	// const options = {};
@@ -76358,8 +76447,15 @@ exports.calcWitness = async (wasm, secret, nullifier, commitments) => {
 
 
 	// const witness = unstringifyBigInts(stringifyBigInts(w));
-	return wBuff;
+	return {
+		witness: wBuff,
+		publicInputs: {
+			address:addr,
+			nullifier:nullifier
+		}
+	};
 }
+
 
 
 

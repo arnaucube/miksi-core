@@ -61,6 +61,7 @@ describe("deposit test", function () {
             "amount": amount,
             "secret": secret,
             "nullifier": nullifier,
+            "oldKey": "1",
             "siblingsOld": siblingsOld,
             "siblingsNew": siblingsNew,
             "rootOld": rootOld,

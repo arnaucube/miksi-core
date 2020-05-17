@@ -35,6 +35,7 @@ template Deposit(nLevels) {
 	signal input amount;
 	signal private input secret;
 	signal private input nullifier;
+	signal private input oldKey;
 	signal private input siblingsOld[nLevels];
 	signal private input siblingsNew[nLevels];
 	signal input rootOld;
@@ -61,7 +62,8 @@ template Deposit(nLevels) {
 	for (var i=0; i<nLevels; i++) {
 		smtOld.siblings[i] <== siblingsOld[i];
 	}
-	smtOld.oldKey <== 1;
+	/* smtOld.oldKey <== 1; */
+	smtOld.oldKey <== oldKey;
 	smtOld.oldValue <== 0;
 	smtOld.isOld0 <== 0;
 	smtOld.key <== hash.out;

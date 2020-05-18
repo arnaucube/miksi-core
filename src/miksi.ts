@@ -25,25 +25,28 @@ exports.calcCommitment = (secret, nullifier) => {
 	return commitment;
 };
 
-exports.calcDepositWitness = async (wasm, secret, nullifier, commitments) => {
+exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) => {
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
 	// rebuild the tree
 	let tree = await smt.newMemEmptyTrie();
-	await tree.insert(1, 0);
+	await tree.insert(0, 0);
 	for (let i=0; i<commitments.length; i++) {
-		await tree.insert(commitments[i], 0);
+		await tree.insert(i+1, commitments[i]);
 	}
 
 	// old root
 	const rootOld = tree.root;
 	const resOld = await tree.find(commitment);
 	let oldKey = "0";
+	let oldValue = "0";
 	if (!resOld.found) {
 		oldKey = resOld.notFoundKey.toString();
+		oldValue = resOld.notFoundValue.toString();
 	}
 	console.log("oldKey", oldKey);
+	console.log("oldValue", oldValue);
 	// if (resOld.found) {
 	//         console.error("leaf expect to not exist but exists");
 	// }
@@ -52,13 +55,13 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments) => {
 		siblingsOld.push("0");
 	};
 
-	await tree.insert(commitment, 0);
+	await tree.insert(key, commitment);
 
 	// new root
 	const rootNew = tree.root;
-	const resNew = await tree.find(commitment);
+	const resNew = await tree.find(key);
 	if (!resNew.found) {
-		console.error("leaf expect to exist but not exists");
+		console.error("leaf with the new commitment expect to exist but not exists");
 	}
 	let siblingsNew = resNew.siblings;
 	while (siblingsNew.length < nLevels) {
@@ -72,11 +75,13 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments) => {
 		"secret": secret,
 		"nullifier": nullifier,
 		"oldKey": oldKey,
+		"oldValue": oldValue,
 		"siblingsOld": siblingsOld,
 		"siblingsNew": siblingsNew,
 		"rootOld": rootOld,
 		"rootNew": rootNew,
-		"commitment": commitment
+		"commitment": commitment,
+		"key": key
 	});
 	console.log("input", input);
 	// const options = {};
@@ -109,23 +114,23 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments) => {
 	};
 }
 
-exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr) => {
+exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr, key) => {
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
 	// rebuild the tree
 	let tree = await smt.newMemEmptyTrie();
-	await tree.insert(1, 0);
+	await tree.insert(0, 0);
 	for (let i=0; i<commitments.length; i++) {
-		await tree.insert(commitments[i], 0);
+		await tree.insert(i+1, commitments[i]);
 	}
 	// await tree.insert(commitment, 0);
 
 	// root
 	const root = tree.root;
-	const res = await tree.find(commitment);
+	const res = await tree.find(key);
 	if (!res.found) {
-		console.error("leaf expect to exist but not exists");
+		console.error("leaf expect to exist but not exists, key:", key);
 	}
 	let siblings = res.siblings;
 	while (siblings.length < nLevels) {
@@ -140,7 +145,8 @@ exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr)
 		"nullifier": nullifier,
 		"siblings": siblings,
 		"root": root,
-		"address": addr
+		"address": addr,
+		"key": key
 	});
 	console.log("input", input);
 	// const options = {};
@@ -156,7 +162,8 @@ exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr)
 		for (let j=0; j<8; j++) {
 			const bi = witness[i];
 			const v = bigInt(bi).shiftRight(j*32).and(0xFFFFFFFF).toJSNumber();
-			wBuff.writeUInt32LE(v, i*32 + j*4, 4)
+			// wBuff.writeUInt32LE(v, i*32 + j*4, 4)
+			wBuff.writeUInt32LE(v, i*32 + j*4)
 		}
 	}
 
@@ -170,6 +177,3 @@ exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr)
 		}
 	};
 }
-
-
-

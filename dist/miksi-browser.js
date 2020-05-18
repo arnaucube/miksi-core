@@ -61,7 +61,7 @@ module.exports={
   "_args": [
     [
       "@web3-js/websocket@1.0.30",
-      "/home/user/git/miksi/miksi-core"
+      "/home/nicebox/miksi/miksi-core"
     ]
   ],
   "_from": "@web3-js/websocket@1.0.30",
@@ -86,7 +86,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/@web3-js/websocket/-/websocket-1.0.30.tgz",
   "_spec": "1.0.30",
-  "_where": "/home/user/git/miksi/miksi-core",
+  "_where": "/home/nicebox/miksi/miksi-core",
   "author": {
     "name": "Brian McKelvey",
     "email": "theturtle32@gmail.com",
@@ -27405,7 +27405,7 @@ module.exports={
   "_args": [
     [
       "elliptic@6.5.2",
-      "/home/user/git/miksi/miksi-core"
+      "/home/nicebox/miksi/miksi-core"
     ]
   ],
   "_from": "elliptic@6.5.2",
@@ -27434,7 +27434,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.5.2.tgz",
   "_spec": "6.5.2",
-  "_where": "/home/user/git/miksi/miksi-core",
+  "_where": "/home/nicebox/miksi/miksi-core",
   "author": {
     "name": "Fedor Indutny",
     "email": "fedor@indutny.com"
@@ -75059,7 +75059,7 @@ module.exports={
   "_args": [
     [
       "web3@1.2.7",
-      "/home/user/git/miksi/miksi-core"
+      "/home/nicebox/miksi/miksi-core"
     ]
   ],
   "_from": "web3@1.2.7",
@@ -75084,7 +75084,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/web3/-/web3-1.2.7.tgz",
   "_spec": "1.2.7",
-  "_where": "/home/user/git/miksi/miksi-core",
+  "_where": "/home/nicebox/miksi/miksi-core",
   "author": {
     "name": "ethereum.org"
   },
@@ -76310,25 +76310,28 @@ exports.calcCommitment = (secret, nullifier) => {
 	return commitment;
 };
 
-exports.calcDepositWitness = async (wasm, secret, nullifier, commitments) => {
+exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) => {
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
 	// rebuild the tree
 	let tree = await smt.newMemEmptyTrie();
-	await tree.insert(1, 0);
+	await tree.insert(0, 0);
 	for (let i=0; i<commitments.length; i++) {
-		await tree.insert(commitments[i], 0);
+		await tree.insert(i+1, commitments[i]);
 	}
 
 	// old root
 	const rootOld = tree.root;
 	const resOld = await tree.find(commitment);
 	let oldKey = "0";
+	let oldValue = "0";
 	if (!resOld.found) {
 		oldKey = resOld.notFoundKey.toString();
+		oldValue = resOld.notFoundValue.toString();
 	}
 	console.log("oldKey", oldKey);
+	console.log("oldValue", oldValue);
 	// if (resOld.found) {
 	//         console.error("leaf expect to not exist but exists");
 	// }
@@ -76337,13 +76340,13 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments) => {
 		siblingsOld.push("0");
 	};
 
-	await tree.insert(commitment, 0);
+	await tree.insert(key, commitment);
 
 	// new root
 	const rootNew = tree.root;
-	const resNew = await tree.find(commitment);
+	const resNew = await tree.find(key);
 	if (!resNew.found) {
-		console.error("leaf expect to exist but not exists");
+		console.error("leaf with the new commitment expect to exist but not exists");
 	}
 	let siblingsNew = resNew.siblings;
 	while (siblingsNew.length < nLevels) {
@@ -76357,11 +76360,13 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments) => {
 		"secret": secret,
 		"nullifier": nullifier,
 		"oldKey": oldKey,
+		"oldValue": oldValue,
 		"siblingsOld": siblingsOld,
 		"siblingsNew": siblingsNew,
 		"rootOld": rootOld,
 		"rootNew": rootNew,
-		"commitment": commitment
+		"commitment": commitment,
+		"key": key
 	});
 	console.log("input", input);
 	// const options = {};
@@ -76394,23 +76399,23 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments) => {
 	};
 }
 
-exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr) => {
+exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr, key) => {
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
 	// rebuild the tree
 	let tree = await smt.newMemEmptyTrie();
-	await tree.insert(1, 0);
+	await tree.insert(0, 0);
 	for (let i=0; i<commitments.length; i++) {
-		await tree.insert(commitments[i], 0);
+		await tree.insert(i+1, commitments[i]);
 	}
 	// await tree.insert(commitment, 0);
 
 	// root
 	const root = tree.root;
-	const res = await tree.find(commitment);
+	const res = await tree.find(key);
 	if (!res.found) {
-		console.error("leaf expect to exist but not exists");
+		console.error("leaf expect to exist but not exists, key:", key);
 	}
 	let siblings = res.siblings;
 	while (siblings.length < nLevels) {
@@ -76425,7 +76430,8 @@ exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr)
 		"nullifier": nullifier,
 		"siblings": siblings,
 		"root": root,
-		"address": addr
+		"address": addr,
+		"key": key
 	});
 	console.log("input", input);
 	// const options = {};

@@ -15,7 +15,7 @@ describe("deposit test", function () {
 	const wasm = await fs.promises.readFile("./build/deposit.wasm");
 	console.log("w", wasm.length);
 
-	const witness = await miksi.calcDepositWitness(wasm, secret, nullifier, commitments);
+	const witness = await miksi.calcDepositWitness(wasm, secret, nullifier, commitments, 1);
 	// console.log("w", witness);
 
 

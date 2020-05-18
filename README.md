@@ -7,6 +7,8 @@
 
 **Warning:** This repository is in a very early stage.
 
+WebApp to use miksi-core can be found at https://github.com/arnaucube/miksi-app
+
 ## Circuits tests
 ```
 npm run test-circuits

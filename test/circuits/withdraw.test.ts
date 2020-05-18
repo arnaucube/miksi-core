@@ -29,11 +29,11 @@ describe("withdraw test", function () {
 
         // add commitment into SMT
         let tree = await smt.newMemEmptyTrie();
-        await tree.insert(commitment, 0);
         await tree.insert(1, 0);
-        await tree.insert(2, 0);
+        await tree.insert(2, commitment);
+        await tree.insert(3, 0);
         console.log("root", tree.root);
-        const res = await tree.find(commitment);
+        const res = await tree.find(2);
         assert(res.found);
         let siblings = res.siblings;
         while (siblings.length < nLevels) {
@@ -50,7 +50,8 @@ describe("withdraw test", function () {
             "nullifier": nullifier,
             "siblings": siblings,
             "root": root,
-            "address": "987654321"
+            "address": "987654321",
+            "key": 2
         });
         await circuit.checkConstraints(witness);
     });

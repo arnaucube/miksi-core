@@ -36,6 +36,7 @@ template Withdraw(nLevels) {
 	signal private input siblings[nLevels];
 	signal input root;
 	signal input address;
+	signal private input key;
 
 	component hash = Poseidon(4, 6, 8, 57);
 	hash.inputs[0] <== coinCode;
@@ -57,8 +58,8 @@ template Withdraw(nLevels) {
 	smtV.oldKey <== 0;
 	smtV.oldValue <== 0;
 	smtV.isOld0 <== 0;
-	smtV.key <== hash.out;
-	smtV.value <== 0;
+	smtV.key <== key;
+	smtV.value <== hash.out;
 }
 
 component main = Withdraw(5);

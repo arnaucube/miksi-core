@@ -42,10 +42,10 @@ describe("deposit test", function () {
         };
         console.log("siblingsOld", siblingsOld);
 
-        await tree.insert(commitment, 0);
+        await tree.insert(2, commitment);
         let rootNew = tree.root;
 
-        res = await tree.find(commitment);
+        res = await tree.find(2);
         // console.log(res);
         assert(res.found);
         let siblingsNew = res.siblings;
@@ -62,11 +62,13 @@ describe("deposit test", function () {
             "secret": secret,
             "nullifier": nullifier,
             "oldKey": "1",
+            "oldValue": "0",
             "siblingsOld": siblingsOld,
             "siblingsNew": siblingsNew,
             "rootOld": rootOld,
             "rootNew": rootNew,
-            "commitment": commitment
+            "commitment": commitment,
+            "key": 2
         });
         await circuit.checkConstraints(witness);
     });

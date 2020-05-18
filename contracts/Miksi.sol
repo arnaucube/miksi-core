@@ -7,6 +7,7 @@ contract Miksi {
   DepositVerifier    dVerifier;
   WithdrawVerifier    wVerifier;
 
+  uint256 key = 0;
   uint256 amount = uint256(1000000000000000000);
   uint256 root ;
   uint256[] commitments;
@@ -15,7 +16,7 @@ contract Miksi {
   constructor( address _depositVerifierContractAddr, address _withdrawVerifierContractAddr) public {
     dVerifier = DepositVerifier(_depositVerifierContractAddr);
     wVerifier = WithdrawVerifier(_withdrawVerifierContractAddr);
-    root = uint256(11499909227292257605992378629333104385616480982267969744564817844870636870870);
+    root = uint256(7191590165524151132621032034309259185021876706372059338263145339926209741311);
   }
 
   function deposit(
@@ -26,22 +27,24 @@ contract Miksi {
             uint[2] memory c
   ) public payable {
     // check root state transition update with zkp
-    uint256[5] memory input = [
+    uint256[6] memory input = [
       0,
       msg.value,
       root, // rootOld
       _root, // rootNew
-      _commitment
+      _commitment,
+      key+1
     ];
     require(dVerifier.verifyProof(a, b, c, input), "zkProof deposit could not be verified");
 
     require(msg.value==amount, "value should be 1 ETH"); // this can be flexible with a wrapper with preset fixed amounts
     commitments.push(_commitment);
     root = _root;
+    key += 1;
   }
 
-  function getCommitments() public view returns (uint256[] memory, uint256) {
-    return (commitments, root);
+  function getCommitments() public view returns (uint256[] memory, uint256, uint256) {
+    return (commitments, root, key+1);
   }
 
   function withdraw(

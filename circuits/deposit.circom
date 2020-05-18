@@ -36,17 +36,19 @@ template Deposit(nLevels) {
 	signal private input secret;
 	signal private input nullifier;
 	signal private input oldKey;
+	signal private input oldValue;
 	signal private input siblingsOld[nLevels];
 	signal private input siblingsNew[nLevels];
 	signal input rootOld;
 	signal input rootNew;
 	signal input commitment;
+	signal input key;
 
 	component hash = Poseidon(4, 6, 8, 57);
 	hash.inputs[0] <== coinCode;
 	hash.inputs[1] <== amount;
 	hash.inputs[2] <== secret;
-	hash.inputs[3] <== nullifier;
+	hash.inputs[3] <== nullifier; // nullifier
 
 	component comCheck = IsEqual();
 	comCheck.in[0] <== hash.out;
@@ -64,10 +66,10 @@ template Deposit(nLevels) {
 	}
 	/* smtOld.oldKey <== 1; */
 	smtOld.oldKey <== oldKey;
-	smtOld.oldValue <== 0;
+	smtOld.oldValue <== oldValue;
 	smtOld.isOld0 <== 0;
-	smtOld.key <== hash.out;
-	smtOld.value <== 0;
+	smtOld.key <== key;
+	smtOld.value <== hash.out;
 
 	component smtNew = SMTVerifier(nLevels);
 	smtNew.enabled <== 1;
@@ -79,8 +81,8 @@ template Deposit(nLevels) {
 	smtNew.oldKey <== 0;
 	smtNew.oldValue <== 0;
 	smtNew.isOld0 <== 0;
-	smtNew.key <== hash.out;
-	smtNew.value <== 0;
+	smtNew.key <== key;
+	smtNew.value <== hash.out;
 }
 
 component main = Deposit(5);

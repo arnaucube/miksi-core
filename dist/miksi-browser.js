@@ -76295,7 +76295,7 @@ const Web3 = require("web3");
 // const buildBn128 = require("wasmsnark").buildBn128;
 
 
-const nLevels = 5;
+const nLevels = 17;
 const coinCode = "0"; // refearing to ETH
 const ethAmount = '1';
 const amount = Web3.utils.toWei(ethAmount, 'ether');

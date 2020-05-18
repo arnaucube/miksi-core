@@ -62,4 +62,4 @@ template Withdraw(nLevels) {
 	smtV.value <== hash.out;
 }
 
-component main = Withdraw(5);
+component main = Withdraw(17); // 16 real levels (due circom leaf protection)

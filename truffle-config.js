@@ -15,6 +15,9 @@
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
+  enableTimeouts: false,
+  before_timeout: 1000000000,
+  test_timeout: 1000000000,
   compilers: {
     solc: {
       version: "0.6.0"

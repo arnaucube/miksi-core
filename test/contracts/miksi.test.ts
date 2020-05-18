@@ -16,7 +16,7 @@ const smt = require("circomlib").smt;
 let insVerifier;
 let insMiksi;
 
-const nLevels = 5;
+const nLevels = 17;
 const secret = ["1234567890", "987654321", "123"];
 
 const coinCode = "0"; // refearing to ETH
@@ -105,6 +105,7 @@ contract("miksi", (accounts) => {
   });
   
   it("Calculate witness and generate the zkProof", async () => {
+    this.timeout(10000000);
     await genZKProof(0, addr2, "1");
     await genZKProof(1, addr4, "2");
     await genZKProof(2, addr4, "3");

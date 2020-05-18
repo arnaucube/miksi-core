@@ -103,4 +103,4 @@ template Deposit(nLevels) {
 	smtNew.value <== hash.out;
 }
 
-component main = Deposit(5);
+component main = Deposit(17); // 16 real levels (due circom leaf protection)

@@ -17,7 +17,7 @@ describe("deposit test", function () {
             {reduceConstraints: false}
         );
 
-        const nLevels = 5;
+        const nLevels = 17;
         const secret = "1234567890";
 
         const coinCode = "0";

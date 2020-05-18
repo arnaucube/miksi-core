@@ -29,6 +29,8 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) =
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
+	console.log("PROVA", poseidon([key, commitment]).toString());
+
 	// rebuild the tree
 	let tree = await smt.newMemEmptyTrie();
 	await tree.insert(0, 0);
@@ -39,6 +41,7 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) =
 	// old root
 	const rootOld = tree.root;
 	const resOld = await tree.find(commitment);
+	console.log("FIND old", resOld);
 	let oldKey = "0";
 	let oldValue = "0";
 	if (!resOld.found) {
@@ -60,6 +63,7 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) =
 	// new root
 	const rootNew = tree.root;
 	const resNew = await tree.find(key);
+	console.log("FIND new", resNew);
 	if (!resNew.found) {
 		console.error("leaf with the new commitment expect to exist but not exists");
 	}

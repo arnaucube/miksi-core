@@ -57,6 +57,24 @@ template Deposit(nLevels) {
 
 	// TODO instead of 2 siblings input, get siblingsOld from siblingsNew[len-1]
 
+	// check that nLevels-1 siblings match from siblingsOld & siblingsNew
+	component siblEq[nLevels];
+	signal count[nLevels];
+	for (var i=0; i<nLevels; i++) {
+		siblEq[i] = IsEqual();
+		siblEq[i].in[0] <== siblingsOld[i];
+		siblEq[i].in[1] <== siblingsNew[i];
+		if (i==0) {
+			count[0] <== siblEq[i].out;
+		} else {
+			count[i] <== siblEq[i].out + count[i-1];
+		}
+	}
+	component countCheck = IsEqual();
+	countCheck.in[0] <== count[nLevels-1];
+	countCheck.in[1] <== nLevels-1;
+	countCheck.out === 1;
+	
 	component smtOld = SMTVerifier(nLevels);
 	smtOld.enabled <== 1;
 	smtOld.fnc <== 1;
@@ -64,13 +82,13 @@ template Deposit(nLevels) {
 	for (var i=0; i<nLevels; i++) {
 		smtOld.siblings[i] <== siblingsOld[i];
 	}
-	/* smtOld.oldKey <== 1; */
+	/* smtOld.oldKey <== 1;  */
 	smtOld.oldKey <== oldKey;
 	smtOld.oldValue <== oldValue;
 	smtOld.isOld0 <== 0;
 	smtOld.key <== key;
 	smtOld.value <== hash.out;
-
+	
 	component smtNew = SMTVerifier(nLevels);
 	smtNew.enabled <== 1;
 	smtNew.fnc <== 0;

@@ -76314,6 +76314,8 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) =
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
+	console.log("PROVA", poseidon([key, commitment]).toString());
+
 	// rebuild the tree
 	let tree = await smt.newMemEmptyTrie();
 	await tree.insert(0, 0);
@@ -76324,6 +76326,7 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) =
 	// old root
 	const rootOld = tree.root;
 	const resOld = await tree.find(commitment);
+	console.log("FIND old", resOld);
 	let oldKey = "0";
 	let oldValue = "0";
 	if (!resOld.found) {
@@ -76345,6 +76348,7 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) =
 	// new root
 	const rootNew = tree.root;
 	const resNew = await tree.find(key);
+	console.log("FIND new", resNew);
 	if (!resNew.found) {
 		console.error("leaf with the new commitment expect to exist but not exists");
 	}
@@ -76447,7 +76451,8 @@ exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr,
 		for (let j=0; j<8; j++) {
 			const bi = witness[i];
 			const v = bigInt(bi).shiftRight(j*32).and(0xFFFFFFFF).toJSNumber();
-			wBuff.writeUInt32LE(v, i*32 + j*4, 4)
+			// wBuff.writeUInt32LE(v, i*32 + j*4, 4)
+			wBuff.writeUInt32LE(v, i*32 + j*4)
 		}
 	}
 
@@ -76461,9 +76466,6 @@ exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr,
 		}
 	};
 }
-
-
-
 
 }).call(this,require("buffer").Buffer)
 },{"big-integer":24,"buffer":70,"circom_runtime":76,"circomlib":95,"ffjavascript":209,"fs":69,"snarkjs":329,"web3":448}]},{},[461])(461)

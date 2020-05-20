@@ -76325,7 +76325,7 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) =
 
 	// old root
 	const rootOld = tree.root;
-	const resOld = await tree.find(commitment);
+	const resOld = await tree.find(key);
 	console.log("FIND old", resOld);
 	let oldKey = "0";
 	let oldValue = "0";

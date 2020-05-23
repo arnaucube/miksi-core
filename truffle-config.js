@@ -18,6 +18,7 @@ module.exports = {
   enableTimeouts: false,
   before_timeout: 1000000000,
   test_timeout: 1000000000,
+  contracts_directory: "./test/build",
   compilers: {
     solc: {
       version: "0.6.0"

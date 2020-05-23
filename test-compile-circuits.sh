@@ -1,6 +1,9 @@
 #!/bin/sh
 
+# This file compiles the circuits to generate the test files
+
 # npm install
+cd test
 rm -r build
 mkdir build
 cd build
@@ -8,16 +11,16 @@ cd build
 compile_and_ts() {
   echo $(date +"%T") "circom ../circuits/main/$CIRCUIT.circom --r1cs --wasm --sym"
   itime="$(date -u +%s)"
-  ../node_modules/.bin/circom ../circuits/main/$CIRCUIT.circom --r1cs --wasm --sym
+  ../../node_modules/.bin/circom ../circuits/main/$CIRCUIT.circom --r1cs --wasm --sym
   ftime="$(date -u +%s)"
   echo "	($(($(date -u +%s)-$itime))s)"
 
   echo $(date +"%T") "snarkjs info -r $CIRCUIT.r1cs"
-  ../node_modules/.bin/snarkjs info -r $CIRCUIT.r1cs
+  ../../node_modules/.bin/snarkjs info -r $CIRCUIT.r1cs
 
   echo $(date +"%T") "snarkjs setup"
   itime="$(date -u +%s)"
-  ../node_modules/.bin/snarkjs setup -r $CIRCUIT.r1cs --pk $CIRCUIT-proving_key.json --vk $CIRCUIT-verification_key.json
+  ../../node_modules/.bin/snarkjs setup -r $CIRCUIT.r1cs --pk $CIRCUIT-proving_key.json --vk $CIRCUIT-verification_key.json
   echo "	($(($(date -u +%s)-$itime))s)"
   echo $(date +"%T") "trusted setup generated"
 
@@ -26,7 +29,7 @@ compile_and_ts() {
 
   echo $(date +"%T") "snarkjs generateverifier"
   itime="$(date -u +%s)"
-  ../node_modules/.bin/snarkjs generateverifier --vk $CIRCUIT-verification_key.json -v $CIRCUIT-verifier.sol
+  ../../node_modules/.bin/snarkjs generateverifier --vk $CIRCUIT-verification_key.json -v $CIRCUIT-verifier.sol
   echo "	($(($(date -u +%s)-$itime))s)"
   echo $(date +"%T") "generateverifier generated"
 
@@ -36,9 +39,9 @@ compile_and_ts() {
   sed -i "s/return the product/return r the product/g" ${CIRCUIT}-verifier.sol
   sed -i "s/contract Verifier/contract ${CONTRACT}Verifier/g" ${CIRCUIT}-verifier.sol
   sed -i "s/Pairing/${CONTRACT}Pairing/g" ${CIRCUIT}-verifier.sol
-  cp ${CIRCUIT}-verifier.sol ../contracts/
+  # cp ${CIRCUIT}-verifier.sol ../contracts/
 
-  node ../node_modules/wasmsnark/tools/buildpkey.js -i ${CIRCUIT}-proving_key.json -o ${CIRCUIT}-proving_key.bin
+  node ../../node_modules/wasmsnark/tools/buildpkey.js -i ${CIRCUIT}-proving_key.json -o ${CIRCUIT}-proving_key.bin
 }
 
 CIRCUIT="deposit"
@@ -47,3 +50,6 @@ compile_and_ts
 CIRCUIT="withdraw"
 CONTRACT="Withdraw"
 compile_and_ts
+
+cp ../../contracts/Miksi.sol ./Miksi.sol
+cp -r ../../contracts/helpers ./helpers

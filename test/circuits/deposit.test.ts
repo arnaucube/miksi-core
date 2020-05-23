@@ -13,11 +13,11 @@ describe("deposit test", function () {
 
     it("Test Deposit", async () => {
         const circuit = await tester(
-            path.join(__dirname, "../../circuits", "deposit.circom"),
+            path.join(__dirname, "main", "deposit.circom"),
             {reduceConstraints: false}
         );
 
-        const nLevels = 17;
+        const nLevels = 4;
         const secret = "1234567890";
 
         const coinCode = "0";

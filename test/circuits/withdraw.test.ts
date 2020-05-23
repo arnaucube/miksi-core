@@ -13,11 +13,11 @@ describe("withdraw test", function () {
 
     it("Test Withdraw", async () => {
         const circuit = await tester(
-            path.join(__dirname, "../../circuits", "withdraw.circom"),
+            path.join(__dirname, "main", "withdraw.circom"),
             {reduceConstraints: false}
         );
 
-        const nLevels = 17;
+        const nLevels = 4;
         const secret = "1234567890";
 
         const coinCode = "0";

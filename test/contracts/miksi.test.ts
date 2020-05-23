@@ -1,6 +1,6 @@
-const DepositVerifier = artifacts.require("../../contracts/DepositVerifier");
-const WithdrawVerifier = artifacts.require("../../contracts/WithdrawVerifier");
-const Miksi = artifacts.require("../../contracts/Miksi.sol");
+const DepositVerifier = artifacts.require("../build/DepositVerifier");
+const WithdrawVerifier = artifacts.require("../build/WithdrawVerifier");
+const Miksi = artifacts.require("../build/Miksi.sol");
 
 const chai = require("chai");
 const expect = chai.expect;
@@ -16,7 +16,7 @@ const smt = require("circomlib").smt;
 let insVerifier;
 let insMiksi;
 
-const nLevels = 17;
+const nLevels = 4;
 const secret = ["1234567890", "987654321", "123"];
 
 const coinCode = "0"; // refearing to ETH
@@ -105,7 +105,6 @@ contract("miksi", (accounts) => {
   });
   
   it("Calculate witness and generate the zkProof", async () => {
-    this.timeout(10000000);
     await genZKProof(0, addr2, "1");
     await genZKProof(1, addr4, "2");
     await genZKProof(2, addr4, "3");
@@ -193,7 +192,7 @@ async function makeDeposit(u, addr) {
     };
 
     // calculate witness
-    const wasm = await fs.promises.readFile("./build/deposit.wasm");
+    const wasm = await fs.promises.readFile("./test/build/deposit.wasm");
     const input = unstringifyBigInts({
       "coinCode": coinCode,
       "amount": amount,
@@ -215,14 +214,14 @@ async function makeDeposit(u, addr) {
     const witness = unstringifyBigInts(stringifyBigInts(w));
 
     // generate zkproof of commitment using snarkjs (as is a test)
-    const provingKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./build/deposit-proving_key.json", "utf8")));
+    const provingKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./test/build/deposit-proving_key.json", "utf8")));
 
     // console.log("Generate zkSNARK proof");
     const res = groth.genProof(provingKey, witness);
     proof[u] = res.proof;
     publicSignals[u] = res.publicSignals;
 
-    const verificationKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./build/deposit-verification_key.json", "utf8")));
+    const verificationKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./test/build/deposit-verification_key.json", "utf8")));
     let pubI = unstringifyBigInts([coinCode, amount, rootOld[u].toString(), rootNew[u].toString(), commitment[u], currKey]);
     let validCheck = groth.isValid(verificationKey, proof[u], pubI);
     assert(validCheck);
@@ -250,7 +249,7 @@ async function genZKProof(u, addr, k) {
     // console.log("siblings", siblings);
 
     // calculate witness
-    const wasm = await fs.promises.readFile("./build/withdraw.wasm");
+    const wasm = await fs.promises.readFile("./test/build/withdraw.wasm");
     const input = unstringifyBigInts({
       "coinCode": coinCode,
       "amount": amount,
@@ -268,7 +267,7 @@ async function genZKProof(u, addr, k) {
     const witness = unstringifyBigInts(stringifyBigInts(w));
 
     // generate zkproof of commitment using snarkjs (as is a test)
-    const provingKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./build/withdraw-proving_key.json", "utf8")));
+    const provingKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./test/build/withdraw-proving_key.json", "utf8")));
 
     // console.log("Generate zkSNARK proof");
     const res = groth.genProof(provingKey, witness);

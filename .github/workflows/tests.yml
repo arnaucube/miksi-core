@@ -20,6 +20,6 @@ jobs:
       run: npm install
     - name: Execute tests
       run: |
-        sh ./compile-circuits.sh
+        sh ./test-compile-circuits.sh
         npm run test-circuits
         npm run test-sc

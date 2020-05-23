@@ -3,6 +3,7 @@
 *From Esperanto, **miksi** (miks·i): to mingle, to blend, to mix, to shuffle*
 
 Ethereum mixer where all the computation & constructions are done offchain and then proved inside a zkSNARK to the Smart Contract (for the *deposit* and for the *withdraw*).
+
 This means that the client builds a MerkleTree and makes all the needed computation, and then generates a zk-proof where proves that all the offchain computation is done following all the rules (no leaf deletion, only one leaf addition, correct leaf format).
 This allows to use only `~325.000 gas` for the *deposit*, and `~308.000 gas` for the withdraw.
 

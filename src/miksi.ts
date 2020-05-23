@@ -19,14 +19,16 @@ exports.randBigInt = () => {
 	return Fr.random();
 };
 
-exports.calcCommitment = (secret, nullifier) => {
+exports.calcCommitment = (key, secret) => {
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
+    	const nullifier = poseidon([key, secret]).toString();
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 	return commitment;
 };
 
-exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) => {
+exports.calcDepositWitness = async (wasm, key, secret, commitments) => {
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
+    	const nullifier = poseidon([key, secret]).toString();
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
 	console.log("PROVA", poseidon([key, commitment]).toString());
@@ -118,8 +120,9 @@ exports.calcDepositWitness = async (wasm, secret, nullifier, commitments, key) =
 	};
 }
 
-exports.calcWithdrawWitness = async (wasm, secret, nullifier, commitments, addr, key) => {
+exports.calcWithdrawWitness = async (wasm, key, secret, commitments, addr) => {
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
+    	const nullifier = poseidon([key, secret]).toString();
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
 	// rebuild the tree

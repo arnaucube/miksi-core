@@ -22,9 +22,10 @@ describe("deposit test", function () {
 
         const coinCode = "0";
         const amount = '1000000000000000000';
-        const nullifier = "567891234";
+        // const nullifier = "567891234";
 
         const poseidon = circomlib.poseidon.createHash(6, 8, 57);
+        const nullifier = poseidon([2, secret]);
         const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
         // add commitment into SMT
@@ -33,7 +34,7 @@ describe("deposit test", function () {
         // await tree.insert(2, 0);
 
         let rootOld = tree.root;
-        let res = await tree.find(commitment);
+        let res = await tree.find(2);
         // console.log(res);
         assert(!res.found);
         let siblingsOld = res.siblings;
@@ -60,7 +61,6 @@ describe("deposit test", function () {
             "coinCode": coinCode,
             "amount": amount,
             "secret": secret,
-            "nullifier": nullifier,
             "oldKey": "1",
             "oldValue": "0",
             "siblingsOld": siblingsOld,

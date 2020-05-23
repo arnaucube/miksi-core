@@ -22,7 +22,7 @@ const secret = ["1234567890", "987654321", "123"];
 const coinCode = "0"; // refearing to ETH
 const ethAmount = '1';
 const amount = web3.utils.toWei(ethAmount, 'ether');
-const nullifier = ["567891234", "432198765", "321"];
+const nullifier = ["0", "0", "0"];
 let commitment = [];
 let tree;
 let oldKey = [];
@@ -88,9 +88,7 @@ contract("miksi", (accounts) => {
   it("Get the commitments data", async () => {
     // getCommitments data
     let res = await insMiksi.getCommitments();
-    expect(res[0][0].toString()).to.be.equal('189025084074544266465422070282645213792582195466360448472858620722286781863');
-    // expect(res[1].toString()).to.be.equal('9328869343897770565751281504295758914771207504252217956739346620422361279598');
-    console.log(res[0]);
+    expect(res[1].toString()).to.be.equal(tree.root.toString());
     commitmentsArray[0] = res[0];
     currKey = res[2];
   });
@@ -155,6 +153,7 @@ contract("miksi", (accounts) => {
 
 async function computeTree(u) {
     const poseidon = circomlib.poseidon.createHash(6, 8, 57);
+    nullifier[u] = poseidon([currKey+1, secret[u]]).toString();
     commitment[u] = poseidon([coinCode, amount, secret[u], nullifier[u]]).toString();
 
     // deposit
@@ -197,7 +196,6 @@ async function makeDeposit(u, addr) {
       "coinCode": coinCode,
       "amount": amount,
       "secret": secret[u],
-      "nullifier": nullifier[u],
       "oldKey": oldKey[u],
       "oldValue": oldValue[u],
       "siblingsOld": siblingsOld[u],

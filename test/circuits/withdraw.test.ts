@@ -22,9 +22,10 @@ describe("withdraw test", function () {
 
         const coinCode = "0";
         const amount = '1000000000000000000';
-        const nullifier = "567891234";
+        // const nullifier = "567891234";
 
         const poseidon = circomlib.poseidon.createHash(6, 8, 57);
+        const nullifier = poseidon([2, secret]);
         const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
         // add commitment into SMT

@@ -9,13 +9,13 @@ describe("deposit test", function () {
 
     it("Test Deposit", async () => {
         const secret = "1234567890";
-        const nullifier = "567891234";
+	const key = 1;
 	const commitments = [];
 
 	const wasm = await fs.promises.readFile("./build/deposit.wasm");
 	console.log("w", wasm.length);
 
-	const witness = await miksi.calcDepositWitness(wasm, secret, nullifier, commitments, 1);
+	const witness = await miksi.calcDepositWitness(wasm, key, secret, commitments);
 	// console.log("w", witness);
 
 

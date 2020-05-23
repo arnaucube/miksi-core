@@ -4,21 +4,27 @@
 WARNING: WIP, very initial version of the miksi circuit
 
 
-
-                     -----------+              +----------+
-PUB_nullifier+------>+          |              |          |
-                     |          |              |          |
-PUB_coinCode+------->+          |              | SMT      +<------+PRI_siblings
-                     | Poseidon +------------->+ Poseidon |
-PUB_amount+--------->+          |              | Verifier |
-                     |          |              |          +<------+PUB_root
-PRI_secret+--------->+          |              |          |        +
-                     +----------+              +----------+        |
-                                                                   |
-                                                                   |
-                             +----+                  +----+        |
-             PUB_address+--->+ != +<-------+0+------>+ != +<-------+
-                             +----+                  +----+
+                     +----------+
+                     |          |
+PRI_secret+--------->+ Poseidon +<------+PRI_key+---------+
+          |          |          |                         |
+          |          +----------+      +----+             |
+          |            nullifier+----->+ != +<-----+0     |
+          |                +           +----+             v
+          |                |                           +--+-------+
+          |                v                           |          |
+          |          +-----+----+                      |          |
+          +--------->+          |                      | SMT      +<------+PRI_siblings
+                     |          +--------------------->+ Poseidon |
+PUB_coinCode+------->+ Poseidon |                      | Verifier |
+                     |          |                      |          +<------+PUB_root
+PUB_amount+--------->+          |                      |          |        +
+                     +----------+                      +----------+        |
+                                                                           |
+                                                                           |
+                             +----+                          +----+        |
+             PUB_address+--->+ != +<-------+0+-------------->+ != +<-------+
+                             +----+                          +----+
 
 
 
@@ -38,11 +44,20 @@ template Withdraw(nLevels) {
 	signal input address;
 	signal private input key;
 
+	component nullifierCmp = Poseidon(2, 6, 8, 57);
+	nullifierCmp.inputs[0] <== key;
+	nullifierCmp.inputs[1] <== secret;
+
+	component nullifierCheck = IsEqual();
+	nullifierCheck.in[0] <== nullifierCmp.out;
+	nullifierCheck.in[1] <== nullifier;
+	nullifierCheck.out === 1;
+
 	component hash = Poseidon(4, 6, 8, 57);
 	hash.inputs[0] <== coinCode;
 	hash.inputs[1] <== amount;
 	hash.inputs[2] <== secret;
-	hash.inputs[3] <== nullifier;
+	hash.inputs[3] <== nullifierCmp.out;
 
 	component z = IsZero();
 	z.in <== address;
@@ -61,5 +76,3 @@ template Withdraw(nLevels) {
 	smtV.key <== key;
 	smtV.value <== hash.out;
 }
-
-/* component main = Withdraw(17); // 16 real levels (due circom leaf protection) */

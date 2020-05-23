@@ -2,22 +2,29 @@
 
 # deposit.circom
 
-                     +----------+              +----------+
-PUB_nullifier+------>+          |              |          |
-                     |          |              | SMT      |
-PUB_coinCode+------->+          |              | Poseidon +<------+PUB_rootOld
-                     | Poseidon +-+----------->+ Verifier |
-PUB_amount+--------->+          | |            | Non      |
-                     |          | |            | Existance+<------+PRI_siblings
-PRI_secret+--------->+          | |            |          |          +
-                     +----------+ |            +----------+          |
-                                  |                                  |
-                                  |                                  |
-                                  |            +----------+          |
-                                  |            |          |          |
-                                  |            |          |          |
-                   +----+         |            | SMT      +<---------+
-PUB_commitment+----> == +<--------+----------->+ Poseidon |
+                     +----------+
+                     |          |
+PRI_secret+--------->+ Poseidon +<----+PUB_key
+          |          |          |        +
+          |          +----------+        |
+          |            nullifier         |
+          |               +              |
+          |               |              |     +----------+
+          |               v              |     |          |
+          |          +----+-----+        +---->+ SMT      |
+          +--------->+          |              | Poseidon +<------+PUB_rootOld
+                     |          +-----+------->+ Verifier |
+PUB_coinCode+------->+ Poseidon |     |        | Non      |
+                     |          |     |        | Existance+<------+PRI_siblings
+PUB_amount+--------->+          |     |        |          |          +
+                     +----------+     |        +----------+          |
+                                      |                              |
+                                      |                              |
+                                      |        +----------+          |
+                                      |        |          |          |
+                                      |        |          |          |
+                   +----+             |        | SMT      +<---------+
+PUB_commitment+----> == +<------------+------->+ Poseidon |
                    +----+                      | Verifier |
                                                |          +<------+PUB_rootNew
                                                |          |
@@ -34,7 +41,6 @@ template Deposit(nLevels) {
 	signal input coinCode;
 	signal input amount;
 	signal private input secret;
-	signal private input nullifier;
 	signal private input oldKey;
 	signal private input oldValue;
 	signal private input siblingsOld[nLevels];
@@ -44,11 +50,15 @@ template Deposit(nLevels) {
 	signal input commitment;
 	signal input key;
 
+	component nullifierCmp = Poseidon(2, 6, 8, 57);
+	nullifierCmp.inputs[0] <== key;
+	nullifierCmp.inputs[1] <== secret;
+
 	component hash = Poseidon(4, 6, 8, 57);
 	hash.inputs[0] <== coinCode;
 	hash.inputs[1] <== amount;
 	hash.inputs[2] <== secret;
-	hash.inputs[3] <== nullifier; // nullifier
+	hash.inputs[3] <== nullifierCmp.out; // nullifier
 
 	component comCheck = IsEqual();
 	comCheck.in[0] <== hash.out;
@@ -106,5 +116,3 @@ template Deposit(nLevels) {
 	smtNew.key <== key;
 	smtNew.value <== hash.out;
 }
-
-/* component main = Deposit(17); // 16 real levels (due circom leaf protection) */

@@ -94,7 +94,7 @@ contract("miksi", (accounts) => {
     commitmentsArray[0] = res[0];
     currKey = res[2];
   });
-  
+
   it("Rebuild the tree from sc commitments", async () => {
     let treeTmp = await smt.newMemEmptyTrie();
     await treeTmp.insert(0, 0);

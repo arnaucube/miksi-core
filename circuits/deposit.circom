@@ -55,7 +55,11 @@ template Deposit(nLevels) {
 	comCheck.in[1] <== commitment;
 	comCheck.out === 1;
 
-	// TODO instead of 2 siblings input, get siblingsOld from siblingsNew[len-1]
+	// TODO instead of 2 siblings input, get siblingsOld from
+	// siblingsNew[len-1] both siblingsOld & siblingsNew have same values
+	// except for one, can be merged into one, to ensure that the circuit
+	// checks that the leaf non existing under rootOld is in the same
+	// position than the check that the leaf exists under the rootNew
 
 	// check that nLevels-1 siblings match from siblingsOld & siblingsNew
 	component siblEq[nLevels];

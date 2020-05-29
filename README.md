@@ -56,7 +56,7 @@ From the depositer's perspective, the interface facilitates the following flow:
 
 6. Generate a zkSNARK proof, which proves:
 	- you know the `secret` & `nullifier` for the `commitment` contained in the leaf you've just added to the MerkleTree
-	- the transition from `RootOld` (the current one in the Smart Contract) to `RootNew` has been done following the rules (no leaf deletion, and only one correctly formatted leaf addition, etc.)
+	- the transition from `RootOld` (the current one in the smart-contract) to `RootNew` has been done following the rules (no leaf deletion, and only one correctly formatted leaf addition, etc.)
 	
 7. Send ETH to the smart-contract `deposit` call, together with the zkProof data
 

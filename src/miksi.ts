@@ -10,7 +10,6 @@ const Web3 = require("web3");
 // const buildBn128 = require("wasmsnark").buildBn128;
 
 
-const nLevels = 17;
 const coinCode = "0"; // refearing to ETH
 const ethAmount = '1';
 const amount = Web3.utils.toWei(ethAmount, 'ether');
@@ -26,12 +25,12 @@ exports.calcCommitment = (key, secret) => {
 	return commitment;
 };
 
-exports.calcDepositWitness = async (wasm, key, secret, commitments) => {
+exports.calcDepositWitness = async (wasm, nLevels, key, secret, commitments) => {
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
     	const nullifier = poseidon([key, secret]).toString();
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();
 
-	console.log("PROVA", poseidon([key, commitment]).toString());
+	console.log("Commitment", commitment.toString());
 
 	// rebuild the tree
 	let tree = await smt.newMemEmptyTrie();
@@ -79,7 +78,6 @@ exports.calcDepositWitness = async (wasm, key, secret, commitments) => {
 		"coinCode": coinCode,
 		"amount": amount,
 		"secret": secret,
-		"nullifier": nullifier,
 		"oldKey": oldKey,
 		"oldValue": oldValue,
 		"siblingsOld": siblingsOld,
@@ -120,7 +118,7 @@ exports.calcDepositWitness = async (wasm, key, secret, commitments) => {
 	};
 }
 
-exports.calcWithdrawWitness = async (wasm, key, secret, commitments, addr) => {
+exports.calcWithdrawWitness = async (wasm, nLevels, key, secret, commitments, addr) => {
 	const poseidon = circomlib.poseidon.createHash(6, 8, 57);
     	const nullifier = poseidon([key, secret]).toString();
 	const commitment = poseidon([coinCode, amount, secret, nullifier]).toString();

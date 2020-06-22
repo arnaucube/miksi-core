@@ -8,14 +8,15 @@ describe("deposit test", function () {
     this.timeout(200000);
 
     it("Test Deposit", async () => {
+	const nLevels = 4;
         const secret = "1234567890";
 	const key = 1;
 	const commitments = [];
 
-	const wasm = await fs.promises.readFile("./build/deposit.wasm");
+	const wasm = await fs.promises.readFile("./test/build/deposit.wasm");
 	console.log("w", wasm.length);
 
-	const witness = await miksi.calcDepositWitness(wasm, key, secret, commitments);
+	const witness = await miksi.calcDepositWitness(wasm, nLevels, key, secret, commitments);
 	// console.log("w", witness);
 
 

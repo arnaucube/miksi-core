@@ -21,5 +21,6 @@ jobs:
     - name: Execute tests
       run: |
         sh ./test-compile-circuits.sh
+        npm run test
         npm run test-circuits
         npm run test-sc

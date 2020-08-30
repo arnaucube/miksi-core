@@ -1,41 +1,38 @@
 /*
 
 # deposit.circom
-
                      +----------+
                      |          |
 PRI_secret+--------->+ Poseidon +<----+PUB_key
           |          |          |        +
-          |          +----------+        |
-          |            nullifier         |
-          |               +              |
-          |               |              |     +----------+
-          |               v              |     |          |
-          |          +----+-----+        +---->+ SMT      |
-          +--------->+          |              | Poseidon +<------+PUB_rootOld
-                     |          +-----+------->+ Verifier |
-PUB_coinCode+------->+ Poseidon |     |        | Non      |
-                     |          |     |        | Existance+<------+PRI_siblings
-PUB_amount+--------->+          |     |        |          |          +
-                     +----------+     |        +----------+          |
-                                      |                              |
-                                      |                              |
-                                      |        +----------+          |
-                                      |        |          |          |
-                                      |        |          |          |
-                   +----+             |        | SMT      +<---------+
-PUB_commitment+----> == +<------------+------->+ Poseidon |
-                   +----+                      | Verifier |
-                                               |          +<------+PUB_rootNew
-                                               |          |
-                                               +----------+
+          |          +----------+        |     +----------+
+          |            nullifier         |     |          +<------+PUB_rootOld
+          |               +              |     |          |
+          |               |              |     |          +<------+PUB_rootNew
+          |               v              |     | SMT      |
+          |          +----+-----+        +---->+ Poseidon +<------+PRI_oldKey
+          +--------->+          |              | Verifier |
+                     |          +-----+------->+ (insert) +<------+PRI_oldValue
+PUB_coinCode+------->+ Poseidon |     |        |          |
+                     |          |     |        |          +<------+PRI_isOld0
+PUB_amount+--------->+          |     |        |          |
+                     +----------+     |        |          +<------+PRI_siblings
+                                      |        +----------+
+                                      |
+                                      |
+                                      |
+                                      |
+                   +----+             |
+PUB_commitment+----> == +<------------+
+                   +----+
+
 
 
 */
 
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
-include "../node_modules/circomlib/circuits/smt/smtverifier.circom";
+include "../node_modules/circomlib/circuits/smt/smtprocessor.circom";
 
 template Deposit(nLevels) {
 	signal input coinCode;
@@ -43,8 +40,8 @@ template Deposit(nLevels) {
 	signal private input secret;
 	signal private input oldKey;
 	signal private input oldValue;
-	signal private input siblingsOld[nLevels];
-	signal private input siblingsNew[nLevels];
+	signal private input isOld0;
+	signal private input siblings[nLevels];
 	signal input rootOld;
 	signal input rootNew;
 	signal input commitment;
@@ -65,54 +62,18 @@ template Deposit(nLevels) {
 	comCheck.in[1] <== commitment;
 	comCheck.out === 1;
 
-	// TODO instead of 2 siblings input, get siblingsOld from
-	// siblingsNew[len-1] both siblingsOld & siblingsNew have same values
-	// except for one, can be merged into one, to ensure that the circuit
-	// checks that the leaf non existing under rootOld is in the same
-	// position than the check that the leaf exists under the rootNew
-
-	// check that nLevels-1 siblings match from siblingsOld & siblingsNew
-	component siblEq[nLevels];
-	signal count[nLevels];
-	for (var i=0; i<nLevels; i++) {
-		siblEq[i] = IsEqual();
-		siblEq[i].in[0] <== siblingsOld[i];
-		siblEq[i].in[1] <== siblingsNew[i];
-		if (i==0) {
-			count[0] <== siblEq[i].out;
-		} else {
-			count[i] <== siblEq[i].out + count[i-1];
-		}
-	}
-	component countCheck = IsEqual();
-	countCheck.in[0] <== count[nLevels-1];
-	countCheck.in[1] <== nLevels-1;
-	countCheck.out === 1;
 	
-	component smtOld = SMTVerifier(nLevels);
-	smtOld.enabled <== 1;
-	smtOld.fnc <== 1;
-	smtOld.root <== rootOld;
+	component smtProcessor = SMTProcessor(nLevels);
+	smtProcessor.oldRoot <== rootOld;
+	smtProcessor.newRoot <== rootNew;
 	for (var i=0; i<nLevels; i++) {
-		smtOld.siblings[i] <== siblingsOld[i];
+		smtProcessor.siblings[i] <== siblings[i];
 	}
-	/* smtOld.oldKey <== 1;  */
-	smtOld.oldKey <== oldKey;
-	smtOld.oldValue <== oldValue;
-	smtOld.isOld0 <== 0;
-	smtOld.key <== key;
-	smtOld.value <== hash.out;
-	
-	component smtNew = SMTVerifier(nLevels);
-	smtNew.enabled <== 1;
-	smtNew.fnc <== 0;
-	smtNew.root <== rootNew;
-	for (var i=0; i<nLevels; i++) {
-		smtNew.siblings[i] <== siblingsNew[i];
-	}
-	smtNew.oldKey <== 0;
-	smtNew.oldValue <== 0;
-	smtNew.isOld0 <== 0;
-	smtNew.key <== key;
-	smtNew.value <== hash.out;
+	smtProcessor.oldKey <== oldKey;
+	smtProcessor.oldValue <== oldValue;
+	smtProcessor.isOld0 <== isOld0;
+	smtProcessor.newKey <== key;
+	smtProcessor.newValue <== hash.out;
+	smtProcessor.fnc[0] <== 1;
+	smtProcessor.fnc[1] <== 0;
 }

@@ -22,7 +22,6 @@ describe("deposit test", function () {
 
         const coinCode = "0";
         const amount = '1000000000000000000';
-        // const nullifier = "567891234";
 
         const poseidon = circomlib.poseidon.createHash(6, 8, 57);
         const nullifier = poseidon([2, secret]);
@@ -31,42 +30,31 @@ describe("deposit test", function () {
         // add commitment into SMT
         let tree = await smt.newMemEmptyTrie();
         await tree.insert(1, 0);
-        // await tree.insert(2, 0);
 
         let rootOld = tree.root;
-        let res = await tree.find(2);
-        // console.log(res);
-        assert(!res.found);
-        let siblingsOld = res.siblings;
-        while (siblingsOld.length < nLevels) {
-            siblingsOld.push("0");
-        };
-        console.log("siblingsOld", siblingsOld);
 
-        await tree.insert(2, commitment);
+        let res = await tree.insert(2, commitment);
+        console.log("INSERT", res);
         let rootNew = tree.root;
 
-        res = await tree.find(2);
-        // console.log(res);
-        assert(res.found);
-        let siblingsNew = res.siblings;
-        while (siblingsNew.length < nLevels) {
-            siblingsNew.push("0");
+        let siblings = res.siblings;
+        while (siblings.length < nLevels) {
+            siblings.push("0");
         };
-        console.log("siblingsNew", siblingsNew);
-        console.log("rootOld", rootOld);
-        console.log("rootNew", rootNew);
+        console.log("siblings", siblings);
+
+        console.log(res);
         
         const witness = await circuit.calculateWitness({
             "coinCode": coinCode,
             "amount": amount,
             "secret": secret,
-            "oldKey": "1",
-            "oldValue": "0",
-            "siblingsOld": siblingsOld,
-            "siblingsNew": siblingsNew,
-            "rootOld": rootOld,
-            "rootNew": rootNew,
+            "oldKey": res.isOld0 ? 0 : res.oldKey,
+            "oldValue": res.isOld0 ? 0 : res.oldValue,
+            "isOld0": res.isOld0 ? 1 : 0,
+            "siblings": siblings,
+            "rootOld": res.oldRoot,
+            "rootNew": res.newRoot,
             "commitment": commitment,
             "key": 2
         });

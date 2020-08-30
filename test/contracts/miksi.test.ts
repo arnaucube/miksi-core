@@ -77,11 +77,11 @@ contract("miksi", (accounts) => {
     // expect(balance_wei).to.be.equal('98993526980000000000');
   });
   it("Make second deposit", async () => {
-    await computeTree(1);
+    // await computeTree(1);
     await makeDeposit(1, addr3);
   });
   it("Make 3rd deposit", async () => {
-    await computeTree(2);
+    // await computeTree(2);
     await makeDeposit(2, addr3);
   });
 
@@ -183,12 +183,9 @@ async function computeTree(u) {
 }
 
 async function makeDeposit(u, addr) {
-    const resC = await tree.find(currKey);
-    assert(resC.found);
-    siblingsNew[u] = resC.siblings;
-    while (siblingsNew[u].length < nLevels) {
-        siblingsNew[u].push("0");
-    };
+    let resInsert = await tree.insert(currKey+1, commitment[u]);
+    rootNew[u] = tree.root;
+    currKey += 1;
 
     // calculate witness
     const wasm = await fs.promises.readFile("./test/build/deposit.wasm");
@@ -196,12 +193,12 @@ async function makeDeposit(u, addr) {
       "coinCode": coinCode,
       "amount": amount,
       "secret": secret[u],
-      "oldKey": oldKey[u],
-      "oldValue": oldValue[u],
-      "siblingsOld": siblingsOld[u],
-      "siblingsNew": siblingsNew[u],
-      "rootOld": rootOld[u],
-      "rootNew": rootNew[u],
+      "oldKey": resInsert.isOld0 ? 0 : resInsert.oldKey,
+      "oldValue": resInsert.isOld0 ? 0 : resInsert.oldValue,
+      "isOld0": resInsert.isOld0 ? 1 : 0,
+      "siblings": resInsert.siblings,
+      "rootOld": resInsert.oldRoot,
+      "rootNew": resInsert.newRoot,
       "commitment": commitment[u],
       "key": currKey
     });
@@ -220,7 +217,7 @@ async function makeDeposit(u, addr) {
     publicSignals[u] = res.publicSignals;
 
     const verificationKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./test/build/deposit-verification_key.json", "utf8")));
-    let pubI = unstringifyBigInts([coinCode, amount, rootOld[u].toString(), rootNew[u].toString(), commitment[u], currKey]);
+    let pubI = unstringifyBigInts([coinCode, amount, res.oldRoot.toString(), res.newRoot.toString(), commitment[u], currKey]);
     let validCheck = groth.isValid(verificationKey, proof[u], pubI);
     assert(validCheck);
     await insMiksi.deposit(

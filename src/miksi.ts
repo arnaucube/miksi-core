@@ -39,51 +39,26 @@ exports.calcDepositWitness = async (wasm, nLevels, key, secret, commitments) => 
 		await tree.insert(i+1, commitments[i]);
 	}
 
-	// old root
-	const rootOld = tree.root;
-	const resOld = await tree.find(key);
-	console.log("FIND old", resOld);
-	let oldKey = "0";
-	let oldValue = "0";
-	if (!resOld.found) {
-		oldKey = resOld.notFoundKey.toString();
-		oldValue = resOld.notFoundValue.toString();
-	}
-	console.log("oldKey", oldKey);
-	console.log("oldValue", oldValue);
-	// if (resOld.found) {
-	//         console.error("leaf expect to not exist but exists");
-	// }
-	let siblingsOld = resOld.siblings;
-	while (siblingsOld.length < nLevels) {
-		siblingsOld.push("0");
-	};
-
-	await tree.insert(key, commitment);
+	let res = await tree.insert(key, commitment);
 
 	// new root
-	const rootNew = tree.root;
-	const resNew = await tree.find(key);
-	console.log("FIND new", resNew);
-	if (!resNew.found) {
-		console.error("leaf with the new commitment expect to exist but not exists");
-	}
-	let siblingsNew = resNew.siblings;
-	while (siblingsNew.length < nLevels) {
-		siblingsNew.push("0");
-	};
+	let siblings = res.siblings;
+	console.log(res);
+	// while (siblings.length < nLevels) {
+	//         siblings.push("0");
+	// };
 
 	// calculate witness
 	const input = unstringifyBigInts({
 		"coinCode": coinCode,
 		"amount": amount,
 		"secret": secret,
-		"oldKey": oldKey,
-		"oldValue": oldValue,
-		"siblingsOld": siblingsOld,
-		"siblingsNew": siblingsNew,
-		"rootOld": rootOld,
-		"rootNew": rootNew,
+		"oldKey": res.isOld0 ? 0 : res.oldKey,
+		"oldValue": res.isOld0 ? 0 : res.oldValue,
+		"isOld0": res.isOld0 ? 1 : 0,
+		"siblings": siblings,
+		"rootOld": res.oldRoot,
+		"rootNew": res.newRoot,
 		"commitment": commitment,
 		"key": key
 	});
@@ -113,7 +88,7 @@ exports.calcDepositWitness = async (wasm, nLevels, key, secret, commitments) => 
 		witness: wBuff,
 		publicInputs: {
 			commitment:commitment,
-			root:rootNew
+			root:res.newRoot
 		}
 	};
 }

@@ -35,7 +35,7 @@ exports.calcDepositWitness = async (wasm, nLevels, key, secret, commitments) => 
 	// rebuild the tree
 	let tree = await smt.newMemEmptyTrie();
 	await tree.insert(0, 0);
-	for (let i=0; i<commitments.length; i++) {
+	for (let i=0; i <commitments.length; i++) {
 		await tree.insert(i+1, commitments[i]);
 	}
 
@@ -72,8 +72,8 @@ exports.calcDepositWitness = async (wasm, nLevels, key, secret, commitments) => 
 
 	const wBuff = Buffer.allocUnsafe(witness.length*32);
 
-	for (let i=0; i<witness.length; i++) {
-		for (let j=0; j<8; j++) {
+	for (let i=0; i <witness.length; i++) {
+		for (let j=0; j <8; j++) {
 			const bi = witness[i];
 			const v = bigInt(bi).shiftRight(j*32).and(0xFFFFFFFF).toJSNumber();
 			// wBuff.writeUInt32LE(v, i*32 + j*4, 4)
@@ -101,7 +101,7 @@ exports.calcWithdrawWitness = async (wasm, nLevels, key, secret, commitments, ad
 	// rebuild the tree
 	let tree = await smt.newMemEmptyTrie();
 	await tree.insert(0, 0);
-	for (let i=0; i<commitments.length; i++) {
+	for (let i=0; i <commitments.length; i++) {
 		await tree.insert(i+1, commitments[i]);
 	}
 	// await tree.insert(commitment, 0);
@@ -138,8 +138,8 @@ exports.calcWithdrawWitness = async (wasm, nLevels, key, secret, commitments, ad
 
 	const wBuff = Buffer.allocUnsafe(witness.length*32);
 
-	for (let i=0; i<witness.length; i++) {
-		for (let j=0; j<8; j++) {
+	for (let i=0; i <witness.length; i++) {
+		for (let j=0; j <8; j++) {
 			const bi = witness[i];
 			const v = bigInt(bi).shiftRight(j*32).and(0xFFFFFFFF).toJSNumber();
 			// wBuff.writeUInt32LE(v, i*32 + j*4, 4)

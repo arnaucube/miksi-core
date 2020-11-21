@@ -9,6 +9,7 @@ const truffleAssert = require('truffle-assertions');
 const fs = require("fs");
 const { groth } = require('snarkjs');
 const { stringifyBigInts, unstringifyBigInts } = require('ffjavascript').utils;
+const Fr = require("ffjavascript").bn128.Fr;
 const WitnessCalculatorBuilder = require("circom_runtime").WitnessCalculatorBuilder;
 const circomlib = require("circomlib");
 const smt = require("circomlib").smt;
@@ -25,18 +26,8 @@ const amount = web3.utils.toWei(ethAmount, 'ether');
 const nullifier = ["0", "0", "0"];
 let commitment = [];
 let tree;
-let oldKey = [];
-let oldValue = [];
-let siblingsOld = [];
-let siblingsNew = [];
-let rootOld = [];
-let rootNew = [];
-// let commitment = [];
-let proof = [];
-let publicSignals = [];
-let commitmentsArray = [];
 let currKey=0;
-let u = 0;
+let proofs = [];
 
 contract("miksi", (accounts) => {
 
@@ -64,74 +55,63 @@ contract("miksi", (accounts) => {
     tree = await smt.newMemEmptyTrie();
     await tree.insert(currKey, 0);
 
-    await computeTree(0);
-
-    expect(rootOld[0].toString()).to.be.equal('7191590165524151132621032034309259185021876706372059338263145339926209741311');
-    // expect(rootNew[0].toString()).to.be.equal('9328869343897770565751281504295758914771207504252217956739346620422361279598');
+    expect(tree.root.toString()).to.be.equal('7191590165524151132621032034309259185021876706372059338263145339926209741311');
   });
 
   it("Make first deposit", async () => {
-    await makeDeposit(0, addr1);
+    nullifier[0] = await makeDeposit(secret[0], addr1);
     balance_wei = await web3.eth.getBalance(addr1);
     // console.log("Balance at " + addr1, web3.utils.fromWei(balance_wei, 'ether'));
     // expect(balance_wei).to.be.equal('98993526980000000000');
   });
   it("Make second deposit", async () => {
-    // await computeTree(1);
-    await makeDeposit(1, addr3);
+    nullifier[1] = await makeDeposit(secret[1], addr3);
   });
   it("Make 3rd deposit", async () => {
-    // await computeTree(2);
-    await makeDeposit(2, addr3);
+    nullifier[2] = await makeDeposit(secret[2], addr3);
   });
-
-  it("Get the commitments data", async () => {
-    // getCommitments data
+  it("Get the commitments data & rebuild the tree", async () => {
+    // get the commitments data
     let res = await insMiksi.getCommitments();
     expect(res[1].toString()).to.be.equal(tree.root.toString());
-    commitmentsArray[0] = res[0];
+    let commitmentsArray = res[0];
     currKey = res[2];
-  });
 
-  it("Rebuild the tree from sc commitments", async () => {
+    // rebuild the tree
     let treeTmp = await smt.newMemEmptyTrie();
     await treeTmp.insert(0, 0);
-    for (let i=0; i<commitmentsArray[0].length; i++) {
-      await treeTmp.insert(i+1, commitmentsArray[0][i]);
+    for (let i=0; i < commitmentsArray.length; i++) {
+      await treeTmp.insert(i+1, commitmentsArray[i]);
     }
     expect(treeTmp.root).to.be.equal(tree.root);
   });
-  
   it("Calculate witness and generate the zkProof", async () => {
-    await genZKProof(0, addr2, "1");
-    await genZKProof(1, addr4, "2");
-    await genZKProof(2, addr4, "3");
+    proofs[0] = await genWithdrawZKProof(secret[0], nullifier[0], addr2, "1");
+    proofs[1] = await genWithdrawZKProof(secret[1], nullifier[1], addr4, "2");
+    proofs[2] = await genWithdrawZKProof(secret[2], nullifier[2], addr4, "3");
   });
-  
   it("Try to use the zkProof with another address and get revert", async () => {
     // console.log("Try to reuse the zkproof and expect revert");
     await truffleAssert.fails(
-      withdrawSC(0, addr1),
+      withdrawSC(nullifier[0], addr1, proofs[0]),
       truffleAssert.ErrorType.REVERT,
       "zkProof withdraw could not be verified"
     );
   });
-  
   it("Withdraw 1 ETH with the zkProof of the 1st deposit to addr2", async () => {
     // withdraw
     // console.log("Withdraw of " + ethAmount + " ETH to " + addr2);
-    let resW = await withdrawSC(0, addr2);
+    let resW = await withdrawSC(nullifier[0], addr2, proofs[0]);
     // console.log("resW", resW);
   
     balance_wei = await web3.eth.getBalance(addr2);
     // console.log("Balance at " + addr2, web3.utils.fromWei(balance_wei, 'ether'));
     expect(balance_wei).to.be.equal('101000000000000000000');
   });
-  
   it("Try to reuse the zkProof and get revert", async () => {
     // console.log("Try to reuse the zkproof and expect revert");
     await truffleAssert.fails(
-      withdrawSC(0, addr2),
+      withdrawSC(nullifier[0], addr2, proofs[0]),
       truffleAssert.ErrorType.REVERT,
       "nullifier already used"
     );
@@ -139,71 +119,44 @@ contract("miksi", (accounts) => {
     expect(balance_wei).to.be.equal('101000000000000000000');
   });
   it("Withdraw 1 ETH with the zkProof of the 2nd deposit to addr4", async () => {
-    let resW = await withdrawSC(1, addr4);
+    let resW = await withdrawSC(nullifier[1], addr4, proofs[1]);
     balance_wei = await web3.eth.getBalance(addr4);
     expect(balance_wei).to.be.equal('101000000000000000000');
   });
   it("Withdraw 1 ETH with the zkProof of the 3rd deposit to addr4", async () => {
-    let resW = await withdrawSC(2, addr4);
+    let resW = await withdrawSC(nullifier[2], addr4, proofs[2]);
     balance_wei = await web3.eth.getBalance(addr4);
     expect(balance_wei).to.be.equal('102000000000000000000');
   });
 });
 
+async function makeDeposit(secret, addr) {
+    currKey += 1;
 
-async function computeTree(u) {
     const poseidon = circomlib.poseidon.createHash(6, 8, 57);
-    nullifier[u] = poseidon([currKey+1, secret[u]]).toString();
-    commitment[u] = poseidon([coinCode, amount, secret[u], nullifier[u]]).toString();
+    let currNullifier = poseidon([currKey, secret]).toString();
+    let currCommitment = poseidon([coinCode, amount, secret, currNullifier]).toString();
 
-    // deposit
-    // add commitment into SMT
-
-    // console.log("currKey", currKey);
-    rootOld[u] = tree.root;
-    const resC = await tree.find(currKey+1);
-    assert(!resC.found);
-    oldKey[u] = "0";
-    oldValue[u] = "0";
-    if (!resC.found) {
-      oldKey[u] = resC.notFoundKey.toString();
-      oldValue[u] = resC.notFoundValue.toString();
-    }
-    // console.log(oldValue[u]);
-    // console.log("FIND", resC);
-    siblingsOld[u] = resC.siblings;
-    while (siblingsOld[u].length < nLevels) {
-        siblingsOld[u].push("0");
-    };
-
-    await tree.insert(currKey+1, commitment[u]);
-    rootNew[u] = tree.root;
-    currKey += 1;
-    // console.log("currKey", currKey);
-}
-
-async function makeDeposit(u, addr) {
-    let resInsert = await tree.insert(currKey+1, commitment[u]);
-    rootNew[u] = tree.root;
-    currKey += 1;
+    let resI = await tree.insert(currKey, currCommitment);
+    while (resI.siblings.length < nLevels) resI.siblings.push(Fr.e(0));
 
     // calculate witness
     const wasm = await fs.promises.readFile("./test/build/deposit.wasm");
     const input = unstringifyBigInts({
       "coinCode": coinCode,
       "amount": amount,
-      "secret": secret[u],
-      "oldKey": resInsert.isOld0 ? 0 : resInsert.oldKey,
-      "oldValue": resInsert.isOld0 ? 0 : resInsert.oldValue,
-      "isOld0": resInsert.isOld0 ? 1 : 0,
-      "siblings": resInsert.siblings,
-      "rootOld": resInsert.oldRoot,
-      "rootNew": resInsert.newRoot,
-      "commitment": commitment[u],
+      "secret": secret,
+      "oldKey": resI.isOld0 ? 0 : resI.oldKey,
+      "oldValue": resI.isOld0 ? 0 : resI.oldValue,
+      "isOld0": resI.isOld0 ? 1 : 0,
+      "siblings": resI.siblings,
+      "rootOld": resI.oldRoot,
+      "rootNew": resI.newRoot,
+      "commitment": currCommitment,
       "key": currKey
     });
     const options = {};
-    // console.log("Calculate witness");
+    // console.log("Calculate witness", input);
     const wc = await WitnessCalculatorBuilder(wasm, options);
     const w = await wc.calculateWitness(input);
     const witness = unstringifyBigInts(stringifyBigInts(w));
@@ -213,43 +166,42 @@ async function makeDeposit(u, addr) {
 
     // console.log("Generate zkSNARK proof");
     const res = groth.genProof(provingKey, witness);
-    proof[u] = res.proof;
-    publicSignals[u] = res.publicSignals;
+    let proof = res.proof;
 
     const verificationKey = unstringifyBigInts(JSON.parse(fs.readFileSync("./test/build/deposit-verification_key.json", "utf8")));
-    let pubI = unstringifyBigInts([coinCode, amount, res.oldRoot.toString(), res.newRoot.toString(), commitment[u], currKey]);
-    let validCheck = groth.isValid(verificationKey, proof[u], pubI);
+    let pubI = unstringifyBigInts([coinCode, amount, resI.oldRoot.toString(), resI.newRoot.toString(), currCommitment, currKey]);
+    let validCheck = groth.isValid(verificationKey, proof, pubI);
+    // console.log("VALIDCHECK", validCheck, pubI, proof);
     assert(validCheck);
     await insMiksi.deposit(
-      commitment[u],
+      currCommitment,
       tree.root.toString(),
-      [proof[u].pi_a[0].toString(), proof[u].pi_a[1].toString()],
+      [proof.pi_a[0].toString(), proof.pi_a[1].toString()],
       [
-        [proof[u].pi_b[0][1].toString(), proof[u].pi_b[0][0].toString()],
-        [proof[u].pi_b[1][1].toString(), proof[u].pi_b[1][0].toString()]
+        [proof.pi_b[0][1].toString(), proof.pi_b[0][0].toString()],
+        [proof.pi_b[1][1].toString(), proof.pi_b[1][0].toString()]
       ],
-      [proof[u].pi_c[0].toString(), proof[u].pi_c[1].toString()],
+      [proof.pi_c[0].toString(), proof.pi_c[1].toString()],
       {from: addr, value: amount}
     );
-
+    return currNullifier;
 }
 
-async function genZKProof(u, addr, k) {
+async function genWithdrawZKProof(secret, nullifier, addr, k) {
     const resC = await tree.find(k);
     assert(resC.found);
     let siblings = resC.siblings;
     while (siblings.length < nLevels) {
         siblings.push("0");
     };
-    // console.log("siblings", siblings);
 
     // calculate witness
     const wasm = await fs.promises.readFile("./test/build/withdraw.wasm");
     const input = unstringifyBigInts({
       "coinCode": coinCode,
       "amount": amount,
-      "secret": secret[u],
-      "nullifier": nullifier[u],
+      "secret": secret,
+      "nullifier": nullifier,
       "siblings": siblings,
       "root": tree.root,
       "address": addr,
@@ -266,20 +218,20 @@ async function genZKProof(u, addr, k) {
 
     // console.log("Generate zkSNARK proof");
     const res = groth.genProof(provingKey, witness);
-    proof[u] = res.proof;
-    publicSignals[u] = res.publicSignals;
+    return res.proof;
 }
 
-async function withdrawSC(u, addr) {
+async function withdrawSC(nullifier, addr, proof) {
+      // console.log("withdrawSC", proof);
       return insMiksi.withdraw(
         addr,
-        nullifier[u],
-        [proof[u].pi_a[0].toString(), proof[u].pi_a[1].toString()],
+        nullifier,
+        [proof.pi_a[0].toString(), proof.pi_a[1].toString()],
         [
-          [proof[u].pi_b[0][1].toString(), proof[u].pi_b[0][0].toString()],
-          [proof[u].pi_b[1][1].toString(), proof[u].pi_b[1][0].toString()]
+          [proof.pi_b[0][1].toString(), proof.pi_b[0][0].toString()],
+          [proof.pi_b[1][1].toString(), proof.pi_b[1][0].toString()]
         ],
-        [proof[u].pi_c[0].toString(), proof[u].pi_c[1].toString()]
+        [proof.pi_c[0].toString(), proof.pi_c[1].toString()]
       );
 }
 
